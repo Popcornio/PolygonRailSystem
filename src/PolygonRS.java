@@ -134,12 +134,28 @@ public class PolygonRS extends Polygon
 			//	Shouldn't be able to pass multiple points in an update, so don't worry about multiple wraps
 			polygonPosition.currentDistance = (distance - abLength);
 			polygonPosition.pointIndex = pBi;
+			
+			//	Update the point indeces and the points
+			pAi++;
+			a = new Point(parent.xpoints[pBi], parent.ypoints[pBi]);
+			pBi = (pAi + 1) % parent.npoints;
+			b = new Point(parent.xpoints[pBi], parent.ypoints[pBi]);
 		}
 		else
 		{
 			//	Update position along current line
 			polygonPosition.currentDistance += distance;
 		}
+		
+		//	Get unit vector
+		Point u = new Point(b.x - a.x, b.y - a.y);
+		u.x /= abLength;
+		u.y /= abLength;
+		
+		//	Get offset to point
+		Point v = new Point((int) (u.x * polygonPosition.currentDistance), (int) (u.y * polygonPosition.currentDistance));
+		
+		position = new Point(a.x + v.x, a.y + v.y);
 		
 		//	Propagate updates from the parent polygon to its children.
 		for (int i = 0; i < children.size(); i++)
@@ -195,13 +211,8 @@ public class PolygonRS extends Polygon
 	{
 		//	A specialized update as the root does not move (but it stays in the center of the screen)
 		
-		Polygon copy = this;	//	bit of a hack to quickly set to the center of the screen every update
-		
 		Point screenMid = new Point((int) (0.5 * screenSize.x + 0.5), (int) (0.5 * screenSize.y + 0.5));
-		
-		for(int i = 0; i < npoints; i++)
-			
-
+		position = screenMid;
 
 		//	Propagate updates from the parent polygon to its children.
 		for (int i = 0; i < children.size(); i++)
