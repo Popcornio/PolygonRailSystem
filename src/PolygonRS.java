@@ -40,6 +40,7 @@ public class PolygonRS extends Polygon
 	private float cyclePeriod;	//	How long it should take for a train should take to cycle its track (seconds).
 	
 	//	Public Attributes
+	List<PolygonRS> drawList = new ArrayList<PolygonRS>();
 	Point position = new Point(); 
 	
 	//	Constructor
@@ -117,6 +118,8 @@ public class PolygonRS extends Polygon
 		// Update position on parent rail-system
 		// Update self, then children
 		//	deltaTime is the time between updates
+		
+		root.drawList.add(this);
 		
 		float distance = deltaTime * speed + polygonPosition.currentDistance;	//	new distance along current line
 
@@ -210,6 +213,8 @@ public class PolygonRS extends Polygon
 	void updateRoot(Point screenSize, float deltaTime)
 	{
 		//	A specialized update as the root does not move (but it stays in the center of the screen)
+		drawList.clear();
+		drawList.add(this);
 		
 		Point screenMid = new Point((int) (0.5 * screenSize.x + 0.5), (int) (0.5 * screenSize.y + 0.5));
 		position = screenMid;
