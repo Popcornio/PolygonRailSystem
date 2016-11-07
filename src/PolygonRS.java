@@ -1,4 +1,3 @@
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.util.*;
@@ -11,7 +10,7 @@ public class PolygonRS extends Polygon
 		Create,	//	create new polygon
 		AddSide,	//	add side
 		RemoveSide,	//	remove side
-		Recolor	//	recolor polygon
+		Recolor	//	re-color polygon
 	}
 	class PolygonPosition
 	{
@@ -29,7 +28,7 @@ public class PolygonRS extends Polygon
 	static final int INITIAL_CYCLE_PERIOD = 10;
 	
 	//	Private Attributes
-	private PolygonRS parent = null, root = null;
+	private PolygonRS parent = null;
 	
 	private List<PolygonRS> children = new ArrayList<PolygonRS>();
 	private PolygonPosition polygonPosition = new PolygonPosition();
@@ -39,9 +38,7 @@ public class PolygonRS extends Polygon
 	private float speed;		//	pixels/sec
 	private float cyclePeriod;	//	How long it should take for a train should take to cycle its track (seconds).
 	
-	//	Public Attributes
-	List<PolygonRS> drawList = new ArrayList<PolygonRS>();
-	Point position = new Point(); 
+	private Point center = new Point();	//	modified in every update 
 	
 	//	Constructor
 	PolygonRS(PolygonRS parent)
@@ -49,7 +46,6 @@ public class PolygonRS extends Polygon
 		if (parent == null)
 		{
 			this.parent = null;
-			root = this;
 			
 			depth = INITIAL_DEPTH;
 			baseRadius = INITIAL_RADIUS;
@@ -61,7 +57,6 @@ public class PolygonRS extends Polygon
 		else
 		{
 			this.parent = parent;
-			root = this.parent.root;
 			
 			depth = parent.depth + 1;
 			baseRadius = (int)(Math.pow(parent.baseRadius, 0.9d) + 0.5d);	//	the function to calculate a child base radius is modifiable
@@ -79,6 +74,8 @@ public class PolygonRS extends Polygon
 			return;
 			
 		//	Create new child PolygonRS, initialize its position, and then add it
+		
+		//	TODO: Figure out how to properly position a new child relative to other children on the same track.
 		PolygonRS p = new PolygonRS(this);
 		
 		children.add(p);
@@ -109,17 +106,16 @@ public class PolygonRS extends Polygon
 	}	
 	private void delete()
 	{
+		children.clear();
 		if (parent != null)
 			parent.children.remove(this);
 	}
 
 	private void update(float deltaTime)
 	{
-		// Update position on parent rail-system
-		// Update self, then children
-		//	deltaTime is the time between updates
+		//	Update position on parent rail-system
 		
-		root.drawList.add(this);
+		//	Update self, then children
 		
 		float distance = deltaTime * speed + polygonPosition.currentDistance;	//	new distance along current line
 
@@ -138,7 +134,7 @@ public class PolygonRS extends Polygon
 			polygonPosition.currentDistance = (distance - abLength);
 			polygonPosition.pointIndex = pBi;
 			
-			//	Update the point indeces and the points
+			//	Update the point indices and the points
 			pAi++;
 			a = new Point(parent.xpoints[pBi], parent.ypoints[pBi]);
 			pBi = (pAi + 1) % parent.npoints;
@@ -158,15 +154,56 @@ public class PolygonRS extends Polygon
 		//	Get offset to point
 		Point v = new Point((int) (u.x * polygonPosition.currentDistance), (int) (u.y * polygonPosition.currentDistance));
 		
-		position = new Point(a.x + v.x, a.y + v.y);
+		center = new Point(a.x + v.x, a.y + v.y);
 		
 		//	Propagate updates from the parent polygon to its children.
 		for (int i = 0; i < children.size(); i++)
 			children.get(i).update(deltaTime);
 	}
 	
-	
 	//	Public Methods
+	List<PolygonRS> getRSList()
+	{
+		//	Return a PolygonRS list ordered by depth from shallowest to deepest (least to greatest).
+		
+		List<PolygonRS> polygonList = new LinkedList<PolygonRS>();
+		Queue<PolygonRS> polygonListBufferQueue = new ArrayDeque<PolygonRS>();	//	use a queue to prioritize shallower children
+		
+		//	Generate a depth-ordered list starting at the referenced object (this)
+		polygonListBufferQueue.add(this);
+		
+		//	Traverse and store the results of the PolygonRS tree
+		while (polygonListBufferQueue.size() > 0)
+		{
+			PolygonRS current = polygonListBufferQueue.remove();
+			polygonList.add(current);
+			for (int i = 0; i < children.size(); i++)
+				polygonListBufferQueue.add(children.get(i));
+		}
+		
+		return polygonList;
+	}
+	
+	Point getCenter()
+	{
+		return center;
+	}
+	Point getDrawPoint()
+	{
+		//	Shift the point to the top-left by the base circle's (the circle used to create this polygon) radius.
+		//	Used for a draw where the point given to start drawing at is the top-left
+		
+		Point a = new Point(xpoints[0], ypoints[0]);
+		Point b = new Point(xpoints[1], ypoints[1]);
+		double hypotenuse = 0.5 * (float) Math.sqrt((b.x - a.x)*(b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+		double theta = (float) (Math.PI / npoints);
+		
+		double xOffset = hypotenuse * Math.cos(theta);
+		double yOffset = hypotenuse * Math.sin(theta);
+
+		return new Point((int) (center.x - xOffset + 0.5), (int) (center.y + yOffset + 0.5));
+	}
+	
 	void sendInput(Point inputPos, InputEnum inputType)
 	{
     	//	TODO: make this more space-efficient
@@ -210,14 +247,11 @@ public class PolygonRS extends Polygon
     	default: break;
     	}
 	}
-	void updateRoot(Point screenSize, float deltaTime)
+	void initializeUpdate(Point screenSize, float deltaTime)
 	{
-		//	A specialized update as the root does not move (but it stays in the center of the screen)
-		drawList.clear();
-		drawList.add(this);
-		
+		//	A specialized update as the root does not move (but it stays in the center of the screen)		
 		Point screenMid = new Point((int) (0.5 * screenSize.x + 0.5), (int) (0.5 * screenSize.y + 0.5));
-		position = screenMid;
+		center = screenMid;
 
 		//	Propagate updates from the parent polygon to its children.
 		for (int i = 0; i < children.size(); i++)
@@ -231,6 +265,8 @@ public class PolygonRS extends Polygon
 	
 	float calculateSpeed()
 	{
+		//	Calculate the speed to travel at for the existing railway this train is on, and the cycle period.
+		
 		Point a = new Point(parent.xpoints[0], parent.ypoints[0]);
 		Point b = new Point(parent.xpoints[1], parent.ypoints[1]);
 		float sideLength = (float) Math.sqrt((b.x - a.x)*(b.x - a.x) + (b.y - a.y) * (b.y - a.y));
