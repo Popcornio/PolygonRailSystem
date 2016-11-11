@@ -11,7 +11,7 @@ import javax.swing.JFrame;
 
 public class Masking extends JFrame {
 
-    public masking(ArrayList<Polygon> polys) {
+    public Masking(ArrayList<Polygon> polys) {
         this.setSize(500, 500);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.add(new PaintSurface(polys), BorderLayout.CENTER);
