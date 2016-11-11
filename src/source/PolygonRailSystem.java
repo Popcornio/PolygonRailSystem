@@ -8,6 +8,9 @@ package source;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+
 import javax.swing.*;
 
 import source.PolygonRS.InputEnum;
@@ -56,7 +59,9 @@ class PolygonWindow extends JFrame
 			if (SwingUtilities.isLeftMouseButton(e))
 			{
 				//JOptionPane.showMessageDialog(null, "Polygon Added");
-				
+				if (root != null)
+					root.sendInput(e.getPoint(), InputEnum.AddSide);
+				System.out.println("Adding Side...");
 				repaint();
 			}
 			if (SwingUtilities.isRightMouseButton(e))
@@ -64,6 +69,16 @@ class PolygonWindow extends JFrame
 				//JOptionPane.showMessageDialog(null, "Polygon Removed");
 				if (root != null)
 					root.sendInput(e.getPoint(), InputEnum.RemoveSide);
+				System.out.println("Removing Side...");
+				repaint();
+			}
+			if (SwingUtilities.isMiddleMouseButton(e))
+			{
+				if (root != null)
+					root.sendInput(e.getPoint(), InputEnum.Create);
+				else
+					root = new PolygonRS();
+				System.out.println("Creating Side...");
 				repaint();
 			}
 			
@@ -137,10 +152,19 @@ class PolygonWindow extends JFrame
 		super.paint(g);
 		
 		if (root == null )
+		{
 			introductionScreen(g);
+		}
 		else
 		{
+			LinkedList<PolygonRS> polygonRSList = new LinkedList<PolygonRS>(root.getRSList());
 			
+			
+			
+			for (int i = 0; i < polygonRSList.size(); i++)
+			{
+				g.drawPolygon(polygonRSList.get(i));
+			}
 		}
 	}
 	
