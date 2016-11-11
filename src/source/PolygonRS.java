@@ -43,30 +43,31 @@ public class PolygonRS extends Polygon
 	private Point center = new Point();	//	modified in every update 
 	
 	//	Constructor
-	PolygonRS(PolygonRS parent)
+	PolygonRS()
+	{
+		this.parent = null;
+		
+		depth = INITIAL_DEPTH;
+		baseRadius = INITIAL_RADIUS;
+		cyclePeriod = INITIAL_CYCLE_PERIOD;
+			
+		resize(MIN_SIDES);
+		speed = calculateSpeed();	//	speed needs to be calculated AFTER the polygon is defined!
+	}
+	private PolygonRS(PolygonRS parent)
 	{
 		if (parent == null)
-		{
-			this.parent = null;
+			System.gc();
+		
+		this.parent = parent;
 			
-			depth = INITIAL_DEPTH;
-			baseRadius = INITIAL_RADIUS;
-			cyclePeriod = INITIAL_CYCLE_PERIOD;
+		depth = parent.depth + 1;
+		baseRadius = (int)(Math.pow(parent.baseRadius, 0.9d) + 0.5d);	//	the function to calculate a child base radius is modifiable
+		cyclePeriod = (int)(Math.pow(parent.baseRadius, 1.1d) + 0.5d);	//	the function to calculate a child cycle period is modifiable
 			
-			resize(MIN_SIDES);
-			speed = calculateSpeed();	//	speed needs to be calculated AFTER the polygon is defined!
-		}
-		else
-		{
-			this.parent = parent;
-			
-			depth = parent.depth + 1;
-			baseRadius = (int)(Math.pow(parent.baseRadius, 0.9d) + 0.5d);	//	the function to calculate a child base radius is modifiable
-			cyclePeriod = (int)(Math.pow(parent.baseRadius, 1.1d) + 0.5d);	//	the function to calculate a child cycle period is modifiable
-			
-			resize(MIN_SIDES);
-			speed = calculateSpeed();	//	speed needs to be calculated AFTER the polygon is defined!
-		}
+		resize(MIN_SIDES);
+		speed = calculateSpeed();	//	speed needs to be calculated AFTER the polygon is defined!
+		
 	}
 	
 	//	Private Methods
@@ -270,6 +271,8 @@ public class PolygonRS extends Polygon
 	float calculateSpeed()
 	{
 		//	Calculate the speed to travel at for the existing railway this train is on, and the cycle period.
+		if (parent == null)
+			return 0;
 		
 		Point a = new Point(parent.xpoints[0], parent.ypoints[0]);
 		Point b = new Point(parent.xpoints[1], parent.ypoints[1]);
