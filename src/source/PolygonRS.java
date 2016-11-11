@@ -1,3 +1,5 @@
+package source;
+
 import java.awt.Point;
 import java.awt.Polygon;
 import java.util.*;
@@ -5,7 +7,7 @@ import java.util.*;
 @SuppressWarnings("serial")
 public class PolygonRS extends Polygon
 {
-	enum InputEnum
+	public enum InputEnum
 	{
 		Create,	//	create new polygon
 		AddSide,	//	add side
@@ -109,6 +111,8 @@ public class PolygonRS extends Polygon
 		children.clear();
 		if (parent != null)
 			parent.children.remove(this);
+		else
+			System.gc();
 	}
 
 	private void update(float deltaTime)
@@ -204,7 +208,7 @@ public class PolygonRS extends Polygon
 		return new Point((int) (center.x - xOffset + 0.5), (int) (center.y + yOffset + 0.5));
 	}
 	
-	void sendInput(Point inputPos, InputEnum inputType)
+	public void sendInput(Point inputPos, InputEnum inputType)
 	{
     	//	TODO: make this more space-efficient
     	Stack<PolygonRS> polyStack = new Stack<PolygonRS>();	//	a stack prioritizes leaves over roots

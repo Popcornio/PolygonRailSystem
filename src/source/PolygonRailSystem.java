@@ -1,3 +1,4 @@
+package source;
 /**
  * Notes:		October 20th
  * 				For testing purposes, I set a dialog box to demonstrate adding and removing
@@ -8,6 +9,9 @@
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+
+import source.PolygonRS.InputEnum;
+
 
 public class PolygonRailSystem extends JFrame
 {
@@ -20,7 +24,7 @@ public class PolygonRailSystem extends JFrame
 class PolygonWindow extends JFrame
 {
 	int maxX, maxY, centerX, centerY;
-	int numPolys = 0;
+	PolygonRS root = null;
 	
 	public PolygonWindow()
 	{
@@ -34,7 +38,7 @@ class PolygonWindow extends JFrame
 		addMouseListener(h);
 	}
 	
-	// Retreives the dimensions of the frame
+	// Retrieves the dimensions of the frame
 	void initgr()
 	{
 		   Dimension d = getSize();
@@ -51,18 +55,15 @@ class PolygonWindow extends JFrame
 		{
 			if (SwingUtilities.isLeftMouseButton(e))
 			{
-				JOptionPane.showMessageDialog(null, "Polygon Added");
-				numPolys++;
+				//JOptionPane.showMessageDialog(null, "Polygon Added");
+				
 				repaint();
 			}
 			if (SwingUtilities.isRightMouseButton(e))
 			{
-				JOptionPane.showMessageDialog(null, "Polygon Removed");
-				
-				// Doesn't allow for a negative number of polygons
-				if (numPolys > 0)
-					numPolys--;
-				
+				//JOptionPane.showMessageDialog(null, "Polygon Removed");
+				if (root != null)
+					root.sendInput(e.getPoint(), InputEnum.RemoveSide);
 				repaint();
 			}
 			
@@ -135,8 +136,12 @@ class PolygonWindow extends JFrame
 		initgr();
 		super.paint(g);
 		
-		if (numPolys == 0)
+		if (root == null )
 			introductionScreen(g);
+		else
+		{
+			
+		}
 	}
 	
 }
