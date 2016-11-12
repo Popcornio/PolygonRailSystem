@@ -26,7 +26,7 @@ public class PolygonRailSystem extends JFrame
 
 class PolygonWindow extends JFrame
 {
-	boolean showBase = false;
+	boolean showBase = true;
 	int maxX, maxY, centerX, centerY;
 	PolygonRS root = null;
 	
@@ -69,7 +69,7 @@ class PolygonWindow extends JFrame
 			{
 				//JOptionPane.showMessageDialog(null, "Polygon Removed");
 				System.out.println("Attempting to Shrink Polygon...");
-				if (root != null && root.npoints == PolygonRS.MIN_SIDES && root.canReceiveInput() && root.getPolygon().contains(e.getPoint()))
+				if (root != null && root.npoints == PolygonRS.MIN_SIDES && root.canModifyPolygon() && root.getPolygon().contains(e.getPoint()))
 					root = null;
 				else if (root != null)
 					root.sendInput(e.getPoint(), InputEnum.RemoveSide);
@@ -171,7 +171,8 @@ class PolygonWindow extends JFrame
 				if (showBase)
 				{
 					Point center = polygonRSList.get(i).getPolygonOrigin();
-					g.drawOval(center.x, center.y, 200, 200);
+					int size = 2 * polygonRSList.get(i).getBaseRadius();
+					g.drawOval(center.x, center.y, size, size);
 				}
 			}
 		}
