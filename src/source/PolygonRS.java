@@ -43,6 +43,9 @@ public class PolygonRS extends Polygon
 	
 	private Point center = new Point();	//	modified in every update 
 	
+	private double lastChildCreatedTime = 0;
+	private double timeOffset = 0;	//	used to equally displace trains on the same track, so to speak.
+	
 	//	Constructor
 	PolygonRS()
 	{
@@ -79,8 +82,13 @@ public class PolygonRS extends Polygon
 			
 		//	Create new child PolygonRS, initialize its position, and then add it
 		
-		//	TODO: Figure out how to properly position a new child relative to other children on the same track.
 		PolygonRS p = new PolygonRS(this);
+		
+		//	Offset the child's position
+		p.timeOffset = p.cyclePeriod / (children.size() + 1) + lastChildCreatedTime;
+		lastChildCreatedTime = System.currentTimeMillis() / 1000.0;
+		p.update(p.timeOffset);
+		
 		children.add(p);
 	}
 	private void grow()
@@ -209,7 +217,7 @@ public class PolygonRS extends Polygon
     	while (polyStack.size() > 0)
     	{
     		PolygonRS current = polyStack.pop();
-			if (current.canReceiveInput() && current.getPolygon().contains(inputPos))
+			if (current.getPolygon().contains(inputPos))
 			{
 				p = current;
 				break;
@@ -259,9 +267,12 @@ public class PolygonRS extends Polygon
 	
 	int getMaxChildren()
 	{
-		return (int)Math.log(npoints);
+		return (int) (npoints * Math.log(npoints));
 	}
-	
+	int getBaseRadius()
+	{
+		return baseRadius;
+	}
 	float calculateSpeed()
 	{
 		//	Calculate the speed to travel at for the existing railway this train is on, and the cycle period.
@@ -286,7 +297,7 @@ public class PolygonRS extends Polygon
 	{
 		return npoints < MAX_SIDES;
 	}
-	boolean canReceiveInput()
+	boolean canModifyPolygon()
 	{
 		return children.size() == 0;
 	}
