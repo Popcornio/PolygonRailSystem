@@ -69,7 +69,7 @@ class PolygonWindow extends JFrame
 			{
 				//JOptionPane.showMessageDialog(null, "Polygon Removed");
 				System.out.println("Attempting to Shrink Polygon...");
-				if (root != null && root.npoints == PolygonRS.MIN_SIDES && root.canReceiveInput() && root.getLocatedPolygon().contains(e.getPoint()))
+				if (root != null && root.npoints == PolygonRS.MIN_SIDES && root.canReceiveInput() && root.getPolygon().contains(e.getPoint()))
 					root = null;
 				else if (root != null)
 					root.sendInput(e.getPoint(), InputEnum.RemoveSide);
@@ -160,17 +160,17 @@ class PolygonWindow extends JFrame
 		}
 		else
 		{
-			root.initializeUpdate(getSize(), 0);
+			double timeDelta = 0;
+			root.initializeUpdate(getSize(), timeDelta);
 			LinkedList<PolygonRS> polygonRSList = new LinkedList<PolygonRS>(root.getRSList());
 
-			System.out.println(4);
 			for (int i = 0; i < polygonRSList.size(); i++)
 			{
-				g.drawPolygon(polygonRSList.get(i).getLocatedPolygon());
+				g.drawPolygon(polygonRSList.get(i).getPolygon());
 				
 				if (showBase)
 				{
-					Point center = polygonRSList.get(i).getCenter();
+					Point center = polygonRSList.get(i).getPolygonOrigin();
 					g.drawOval(center.x, center.y, 200, 200);
 				}
 			}
