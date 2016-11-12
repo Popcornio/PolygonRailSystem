@@ -18,7 +18,7 @@ public class PolygonRS extends Polygon
 	class PolygonPosition
 	{
 		int pointIndex = 0;
-		float currentDistance = 0;	//	distance from the current point to the next point
+		double currentDistance = 0;	//	distance from the current point to the next point
 	}
 	
 	//	Static-Final Attributes
@@ -119,13 +119,11 @@ public class PolygonRS extends Polygon
 			System.gc();
 	}
 
-	private void update(float deltaTime)
+	private void update(double deltaTime)
 	{
 		//	Update position on parent rail-system
 		
 		//	Update self, then children
-
-		float distance = deltaTime * speed + polygonPosition.currentDistance;	//	new distance along current line
 
 		int pAi = polygonPosition.pointIndex;
 		int pBi = (pAi + 1) % parent.npoints;
@@ -133,41 +131,35 @@ public class PolygonRS extends Polygon
 		Point a = new Point(parent.xpoints[pAi], parent.ypoints[pAi]);
 		Point b = new Point(parent.xpoints[pBi], parent.ypoints[pBi]);
 		
-		float abLength = (float) Math.sqrt((b.x - a.x)*(b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+		double abLength = Math.sqrt((b.x - a.x)*(b.x - a.x) + (b.y - a.y) * (b.y - a.y));
 
-		// Wrap-around
-		if (distance > abLength)
+		polygonPosition.currentDistance += deltaTime * speed;	//	new distance along current line
+		
+		//	Account for overlapping
+		int overflow = (int) (polygonPosition.currentDistance / abLength);
+		if (polygonPosition.currentDistance > abLength)
 		{
-			//	Shouldn't be able to pass multiple points in an update, so don't worry about multiple wraps
-			polygonPosition.currentDistance = (distance - abLength);
-			polygonPosition.pointIndex = pBi;
-			
-			//	Update the point indices and the points
-			pAi++;
-			a = new Point(parent.xpoints[pBi], parent.ypoints[pBi]);
-			pBi = (pAi + 1) % parent.npoints;
-			b = new Point(parent.xpoints[pBi], parent.ypoints[pBi]);
-		}
-		else
-		{
-			//	Update position along current line
-			polygonPosition.currentDistance += distance;
+			polygonPosition.pointIndex = (pAi + overflow) % parent.npoints;
+			polygonPosition.currentDistance = -overflow * abLength;
+			update(deltaTime);
+			return;
 		}
 		
 		//	Get unit vector
-		Point u = new Point(b.x - a.x, b.y - a.y);
-		u.x /= abLength;
-		u.y /= abLength;
+		double ux = (double) (b.x - a.x) / abLength, uy = (double) (b.y - a.y) / abLength;
 		
 		//	Get offset to point
-		Point v = new Point((int) (u.x * polygonPosition.currentDistance), (int) (u.y * polygonPosition.currentDistance));
+		int vx = (int) (ux * polygonPosition.currentDistance + 0.5), vy = (int) (uy * polygonPosition.currentDistance + 0.5);
 		
-		center = new Point(a.x + v.x, a.y + v.y);
+		center = parent.getPolygonOrigin();
+		center.x += a.x + vx;
+		center.y += a.y + vy;
 
 		//	Propagate updates from the parent polygon to its children.
 		for (int i = 0; i < children.size(); i++)
 			children.get(i).update(deltaTime);
 	}
+	
 	
 	//	Public Methods
 	List<PolygonRS> getRSList()
@@ -192,18 +184,19 @@ public class PolygonRS extends Polygon
 		return polygonList;
 	}
 	
-	Point getCenter()
-	{
-		return new Point(center.x - baseRadius, center.y - baseRadius);
-	}
-	Polygon getLocatedPolygon()
+	Polygon getPolygon()
 	{
 		Polygon p = new Polygon();
-		Point offset = getCenter();
+		Point offset = getPolygonOrigin();
 		for (int i = 0; i < npoints; i++)
 			p.addPoint(xpoints[i] + offset.x, ypoints[i] + offset.y);
 		
 		return p;
+	}
+
+	Point getPolygonOrigin()
+	{
+		return new Point(center.x - baseRadius, center.y - baseRadius);
 	}
 	
 	public void sendInput(Point inputPos, InputEnum inputType)
@@ -216,7 +209,7 @@ public class PolygonRS extends Polygon
     	while (polyStack.size() > 0)
     	{
     		PolygonRS current = polyStack.pop();
-			if (current.canReceiveInput() && current.getLocatedPolygon().contains(inputPos))
+			if (current.canReceiveInput() && current.getPolygon().contains(inputPos))
 			{
 				p = current;
 				break;
@@ -253,7 +246,7 @@ public class PolygonRS extends Polygon
     	default: break;
     	}
 	}
-	void initializeUpdate(Dimension screenSize, float deltaTime)
+	void initializeUpdate(Dimension screenSize, double deltaTime)
 	{
 		//	A specialized update as the root does not move (but it stays in the center of the screen)		
 		Point screenMid = new Point((int) (0.5 * screenSize.width + 0.5), (int) (0.5 * screenSize.height + 0.5));
