@@ -60,26 +60,28 @@ class PolygonWindow extends JFrame
 			if (SwingUtilities.isLeftMouseButton(e))
 			{
 				//JOptionPane.showMessageDialog(null, "Polygon Added");
+				System.out.println("Attempting to Grow Polygon...");
 				if (root != null)
 					root.sendInput(e.getPoint(), InputEnum.AddSide);
-				System.out.println("Adding Side...");
 				repaint();
 			}
 			if (SwingUtilities.isRightMouseButton(e))
 			{
 				//JOptionPane.showMessageDialog(null, "Polygon Removed");
-				if (root != null)
+				System.out.println("Attempting to Shrink Polygon...");
+				if (root != null && root.npoints == PolygonRS.MIN_SIDES && root.canReceiveInput() && root.getLocatedPolygon().contains(e.getPoint()))
+					root = null;
+				else if (root != null)
 					root.sendInput(e.getPoint(), InputEnum.RemoveSide);
-				System.out.println("Removing Side...");
 				repaint();
 			}
 			if (SwingUtilities.isMiddleMouseButton(e))
 			{
+				System.out.println("Attempting to Create Polygon...");
 				if (root != null)
 					root.sendInput(e.getPoint(), InputEnum.Create);
 				else
 					root = new PolygonRS();
-				System.out.println("Creating Side...");
 				repaint();
 			}
 			
@@ -159,11 +161,9 @@ class PolygonWindow extends JFrame
 		else
 		{
 			root.initializeUpdate(getSize(), 0);
-			
 			LinkedList<PolygonRS> polygonRSList = new LinkedList<PolygonRS>(root.getRSList());
-			
-			
-			
+
+			System.out.println(4);
 			for (int i = 0; i < polygonRSList.size(); i++)
 			{
 				g.drawPolygon(polygonRSList.get(i).getLocatedPolygon());
