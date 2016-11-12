@@ -75,7 +75,7 @@ public class PolygonRS extends Polygon
 	//	Private Methods
 
 	private void grow() { resize(npoints + 1); }
-	private void shrink() { resize(npoints - 1); }
+	private void shrink() { children.clear(); resize(npoints - 1); }
 	private void addChild()
 	{
 		if (!canAddChild())
@@ -211,7 +211,7 @@ public class PolygonRS extends Polygon
 	//	Public Methods
 
 	public Point getPolygonOrigin() { return new Point(center.x - baseRadius, center.y - baseRadius); }
-	public int getMaxChildren() { return (int) (npoints * Math.log(npoints)); }
+	public int getMaxChildren() { return (int) (Math.log(npoints) / Math.log(2)); }
 	public int getBaseRadius() { return baseRadius; }	
 	public boolean canAddChild() { return children.size() < getMaxChildren() && depth < MAX_DEPTH; }
 	public boolean canGrowPolygon() { return npoints < MAX_SIDES; }
