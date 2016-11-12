@@ -26,7 +26,7 @@ public class PolygonRailSystem extends JFrame
 
 class PolygonWindow extends JFrame
 {
-	boolean showBase = true;
+	boolean showBase = false;
 	int maxX, maxY, centerX, centerY;
 	PolygonRS root = null;
 	
@@ -40,6 +40,8 @@ class PolygonWindow extends JFrame
 		
 		Handler h = new Handler();
 		addMouseListener(h);
+
+		createBufferStrategy(3);
 	}
 	
 	// Retrieves the dimensions of the frame
@@ -59,16 +61,14 @@ class PolygonWindow extends JFrame
 		{
 			if (SwingUtilities.isLeftMouseButton(e))
 			{
-				//JOptionPane.showMessageDialog(null, "Polygon Added");
-				System.out.println("Attempting to Grow Polygon...");
+				//System.out.println("Attempting to Grow Polygon...");
 				if (root != null)
 					root.sendInput(e.getPoint(), InputEnum.AddSide);
 				repaint();
 			}
 			if (SwingUtilities.isRightMouseButton(e))
 			{
-				//JOptionPane.showMessageDialog(null, "Polygon Removed");
-				System.out.println("Attempting to Shrink Polygon...");
+				//System.out.println("Attempting to Shrink Polygon...");
 				if (root != null && root.npoints == PolygonRS.MIN_SIDES && root.canModifyPolygon() && root.getPolygon().contains(e.getPoint()))
 					root = null;
 				else if (root != null)
@@ -77,7 +77,7 @@ class PolygonWindow extends JFrame
 			}
 			if (SwingUtilities.isMiddleMouseButton(e))
 			{
-				System.out.println("Attempting to Create Polygon...");
+				//System.out.println("Attempting to Create Polygon...");
 				if (root != null)
 					root.sendInput(e.getPoint(), InputEnum.Create);
 				else
