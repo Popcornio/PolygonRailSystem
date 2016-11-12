@@ -81,7 +81,6 @@ public class PolygonRS extends Polygon
 		
 		//	TODO: Figure out how to properly position a new child relative to other children on the same track.
 		PolygonRS p = new PolygonRS(this);
-		
 		children.add(p);
 	}
 	private void grow()
@@ -125,7 +124,7 @@ public class PolygonRS extends Polygon
 		//	Update position on parent rail-system
 		
 		//	Update self, then children
-		
+
 		float distance = deltaTime * speed + polygonPosition.currentDistance;	//	new distance along current line
 
 		int pAi = polygonPosition.pointIndex;
@@ -164,7 +163,7 @@ public class PolygonRS extends Polygon
 		Point v = new Point((int) (u.x * polygonPosition.currentDistance), (int) (u.y * polygonPosition.currentDistance));
 		
 		center = new Point(a.x + v.x, a.y + v.y);
-		
+
 		//	Propagate updates from the parent polygon to its children.
 		for (int i = 0; i < children.size(); i++)
 			children.get(i).update(deltaTime);
@@ -186,8 +185,8 @@ public class PolygonRS extends Polygon
 		{
 			PolygonRS current = polygonListBufferQueue.remove();
 			polygonList.add(current);
-			for (int i = 0; i < children.size(); i++)
-				polygonListBufferQueue.add(children.get(i));
+			for (int i = 0; i < current.children.size(); i++)
+				polygonListBufferQueue.add(current.children.get(i));
 		}
 		
 		return polygonList;
@@ -209,7 +208,6 @@ public class PolygonRS extends Polygon
 	
 	public void sendInput(Point inputPos, InputEnum inputType)
 	{
-    	//	TODO: make this more space-efficient
     	Stack<PolygonRS> polyStack = new Stack<PolygonRS>();	//	a stack prioritizes leaves over roots
     	polyStack.add(this);	//	input starts at the object used as a reference, and works its way down.
     	
@@ -218,7 +216,7 @@ public class PolygonRS extends Polygon
     	while (polyStack.size() > 0)
     	{
     		PolygonRS current = polyStack.pop();
-			if (current.canReceiveInput() && current.contains(inputPos))
+			if (current.canReceiveInput() && current.getLocatedPolygon().contains(inputPos))
 			{
 				p = current;
 				break;
@@ -227,20 +225,25 @@ public class PolygonRS extends Polygon
     		for (int i = 0; i < current.children.size(); i++)
     			polyStack.push(current.children.get(i));
     	}
+    	if (p == null)
+    		return;
     	
     	//	Apply input to applicable PolygonRS
     	switch(inputType)
     	{
     	case Create:
-			addChild();
+			p.addChild();
+			System.out.println("Adding child.");
     		break;
     		
     	case AddSide:
-    		grow();
+    		p.grow();
+			System.out.println("Growing Polygon.");
     		break;
     		
    	 	case RemoveSide:
-   	 		shrink();
+   	 		p.shrink();
+			System.out.println("Shrinking Polygon.");
 			break;
 			
     	case Recolor:
