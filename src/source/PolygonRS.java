@@ -38,15 +38,13 @@ public class PolygonRS extends Polygon
 	private int depth;	//	depth of current node in tree
 	
 	private int baseRadius;	//	pixels
-	private float speed;		//	pixels/sec
-	private float cyclePeriod;	//	How long it should take for a train should take to cycle its track (seconds).
+	private double speed;		//	pixels/sec
+	private double cyclePeriod;	//	How long it should take for a train should take to cycle its track (seconds).
 	
 	private Point center = new Point();	//	modified in every update 
-	
-	private double lastChildCreatedTime = 0;
-	private double timeOffset = 0;	//	used to equally displace trains on the same track, so to speak.
-	
+		
 	//	Constructor
+	
 	PolygonRS()
 	{
 		this.parent = null;
@@ -75,54 +73,71 @@ public class PolygonRS extends Polygon
 	}
 	
 	//	Private Methods
+
+	private void grow() { resize(npoints + 1); }
+	private void shrink() { resize(npoints - 1); }
 	private void addChild()
 	{
 		if (!canAddChild())
 			return;
-			
-		//	Create new child PolygonRS, initialize its position, and then add it
-		
+
 		PolygonRS p = new PolygonRS(this);
-		
-		//	Offset the child's position
-		p.timeOffset = p.cyclePeriod / (children.size() + 1) + lastChildCreatedTime;
-		lastChildCreatedTime = System.currentTimeMillis() / 1000.0;
-		p.update(p.timeOffset);
-		
 		children.add(p);
+		
+		//	Create the new child and add it to the list of children
+		setChildrenInitPos();
 	}
-	private void grow()
-	{
-		resize(npoints + 1);
-	}	
-	private void shrink()
-	{
-		int shrinkedSize = npoints - 1;
-		if (shrinkedSize < MIN_SIDES)
-			delete();
-		resize(shrinkedSize);
-	}		
 	private void resize(int size)
 	{
-		if (size >= MIN_SIDES && size <= MAX_SIDES)
+		if (size < MIN_SIDES)
+		{
+			delete();
+		}
+		else if (size <= MAX_SIDES)
 		{
 			reset();
+			
 			double thetaAddend = size % 2 == 0? -Math.PI / size : -Math.PI / 2;
-			
-			
 			for (int i = 0; i < size; i ++)
 			{
 				int x = (int)Math.round((baseRadius + baseRadius * Math.cos(i * 2 * Math.PI / size + thetaAddend)));
 				int y = (int)Math.round((baseRadius + baseRadius * Math.sin(i * 2 * Math.PI / size + thetaAddend)));
 				addPoint(x,y);
 			}
+
+			setChildrenInitPos();
 		}
-	}	
+	}
+	
+	private void setChildrenInitPos()
+	{
+		//	Reset the children's positions and then space them relative to each other.
+		if (children.size() == 0)
+			return;
+		double timeOffset = children.get(0).cyclePeriod / (double) children.size();
+		for (int i = 0; i < children.size(); i++)
+		{
+			children.get(i).resetPosition();
+			children.get(i).update(i * timeOffset);
+		}
+	}
+	private void resetPosition()
+	{
+		polygonPosition.currentDistance = 0;
+		polygonPosition.pointIndex = 0;
+		
+		for (int i = 0; i < children.size(); i++)
+			children.get(i).resetPosition();
+	}
+	
 	private void delete()
 	{
 		children.clear();
 		if (parent != null)
+		{
 			parent.children.remove(this);
+			parent.setChildrenInitPos();
+		}
 		else
 			System.gc();
 	}
@@ -168,9 +183,87 @@ public class PolygonRS extends Polygon
 			children.get(i).update(deltaTime);
 	}
 	
+	private void applyInput(PolygonRS p, InputEnum inputType)
+	{
+    	switch(inputType)
+    	{
+    	case Create:
+			p.addChild();
+    		break;
+    		
+    	case AddSide:
+    		p.grow();
+    		break;
+    		
+   	 	case RemoveSide:
+   	 		p.shrink();
+			break;
+			
+    	case Recolor:
+    		//	does nothing
+    		break;
+    		
+    	default: break;
+    	}
+	}
+	
 	
 	//	Public Methods
-	List<PolygonRS> getRSList()
+
+	public Point getPolygonOrigin() { return new Point(center.x - baseRadius, center.y - baseRadius); }
+	public int getMaxChildren() { return (int) (npoints * Math.log(npoints)); }
+	public int getBaseRadius() { return baseRadius; }	
+	public boolean canAddChild() { return children.size() < getMaxChildren() && depth < MAX_DEPTH; }
+	public boolean canGrowPolygon() { return npoints < MAX_SIDES; }
+	public boolean canModifyPolygon() { return children.size() == 0; }
+	public double calculateSpeed()
+	{
+		//	Calculate the speed to travel at for the existing railway this train is on, and the cycle period.
+		if (parent == null)
+			return 0;
+		
+		Point a = new Point(parent.xpoints[0], parent.ypoints[0]);
+		Point b = new Point(parent.xpoints[1], parent.ypoints[1]);
+		double sideLength = (float) Math.sqrt((b.x - a.x)*(b.x - a.x) + (b.y - a.y) * (b.y - a.y));
+		
+		double perimeter = sideLength * parent.npoints;
+		double speed = perimeter / cyclePeriod;
+		
+		return speed;
+	}
+	
+	public void initializeUpdate(Dimension screenSize, double deltaTime)
+	{
+		//	A specialized update as the root does not move (but it stays in the center of the screen)		
+		Point screenMid = new Point((int) (0.5 * screenSize.width + 0.5), (int) (0.5 * screenSize.height + 0.5));
+		center = screenMid;
+
+		//	Propagate updates from the parent polygon to its children.
+		for (int i = 0; i < children.size(); i++)
+			children.get(i).update(deltaTime);
+	}
+	
+	public void sendInput(Point inputPos, InputEnum inputType)
+	{
+    	Stack<PolygonRS> polyStack = new Stack<PolygonRS>();	//	a stack prioritizes leaves over roots
+    	polyStack.add(this);	//	input starts at the object used as a reference, and works its way down.
+    	
+    	//	Find a valid PolygonRS to send the input to
+    	while (polyStack.size() > 0)
+    	{
+    		PolygonRS current = polyStack.pop();
+			if (current.getPolygon().contains(inputPos))
+			{
+				applyInput(current, inputType);
+		    	return;
+			}
+    		
+    		for (int i = 0; i < current.children.size(); i++)
+    			polyStack.push(current.children.get(i));
+    	}
+	}
+	
+	public List<PolygonRS> getRSList()
 	{
 		//	Return a PolygonRS list ordered by depth from shallowest to deepest (least to greatest).
 		
@@ -192,7 +285,7 @@ public class PolygonRS extends Polygon
 		return polygonList;
 	}
 	
-	Polygon getPolygon()
+	public Polygon getPolygon()
 	{
 		Polygon p = new Polygon();
 		Point offset = getPolygonOrigin();
@@ -200,106 +293,6 @@ public class PolygonRS extends Polygon
 			p.addPoint(xpoints[i] + offset.x, ypoints[i] + offset.y);
 		
 		return p;
-	}
-
-	Point getPolygonOrigin()
-	{
-		return new Point(center.x - baseRadius, center.y - baseRadius);
-	}
-	
-	public void sendInput(Point inputPos, InputEnum inputType)
-	{
-    	Stack<PolygonRS> polyStack = new Stack<PolygonRS>();	//	a stack prioritizes leaves over roots
-    	polyStack.add(this);	//	input starts at the object used as a reference, and works its way down.
-    	
-    	//	Find a valid PolygonRS to send the input to
-    	PolygonRS p = null;
-    	while (polyStack.size() > 0)
-    	{
-    		PolygonRS current = polyStack.pop();
-			if (current.getPolygon().contains(inputPos))
-			{
-				p = current;
-				break;
-			}
-    		
-    		for (int i = 0; i < current.children.size(); i++)
-    			polyStack.push(current.children.get(i));
-    	}
-    	if (p == null)
-    		return;
-    	
-    	//	Apply input to applicable PolygonRS
-    	switch(inputType)
-    	{
-    	case Create:
-			p.addChild();
-			System.out.println("Adding child.");
-    		break;
-    		
-    	case AddSide:
-    		p.grow();
-			System.out.println("Growing Polygon.");
-    		break;
-    		
-   	 	case RemoveSide:
-   	 		p.shrink();
-			System.out.println("Shrinking Polygon.");
-			break;
-			
-    	case Recolor:
-    		//	does nothing
-    		break;
-    		
-    	default: break;
-    	}
-	}
-	void initializeUpdate(Dimension screenSize, double deltaTime)
-	{
-		//	A specialized update as the root does not move (but it stays in the center of the screen)		
-		Point screenMid = new Point((int) (0.5 * screenSize.width + 0.5), (int) (0.5 * screenSize.height + 0.5));
-		center = screenMid;
-
-		//	Propagate updates from the parent polygon to its children.
-		for (int i = 0; i < children.size(); i++)
-			children.get(i).update(deltaTime);
-	}
-	
-	int getMaxChildren()
-	{
-		return (int) (npoints * Math.log(npoints));
-	}
-	int getBaseRadius()
-	{
-		return baseRadius;
-	}
-	float calculateSpeed()
-	{
-		//	Calculate the speed to travel at for the existing railway this train is on, and the cycle period.
-		if (parent == null)
-			return 0;
-		
-		Point a = new Point(parent.xpoints[0], parent.ypoints[0]);
-		Point b = new Point(parent.xpoints[1], parent.ypoints[1]);
-		float sideLength = (float) Math.sqrt((b.x - a.x)*(b.x - a.x) + (b.y - a.y) * (b.y - a.y));
-		
-		float perimeter = sideLength * npoints;
-		float speed = perimeter / cyclePeriod;
-		
-		return speed;
-	}
-	
-	boolean canAddChild()
-	{
-		return children.size() < getMaxChildren() && depth < MAX_DEPTH;
-	}
-	boolean canGrowPolygon()
-	{
-		return npoints < MAX_SIDES;
-	}
-	boolean canModifyPolygon()
-	{
-		return children.size() == 0;
 	}
 
 }
