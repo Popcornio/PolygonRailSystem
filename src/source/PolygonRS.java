@@ -1,5 +1,6 @@
 package source;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.util.*;
@@ -99,10 +100,13 @@ public class PolygonRS extends Polygon
 		if (size >= MIN_SIDES && size <= MAX_SIDES)
 		{
 			reset();
+			double thetaAddend = size % 2 == 0? -Math.PI / size : -Math.PI / 2;
+			
+			
 			for (int i = 0; i < size; i ++)
 			{
-				int x = (int)Math.round((baseRadius + baseRadius * Math.cos(i * 2 * Math.PI / size)));
-				int y = (int)Math.round((baseRadius + baseRadius * Math.sin(i * 2 * Math.PI / size)));
+				int x = (int)Math.round((baseRadius + baseRadius * Math.cos(i * 2 * Math.PI / size + thetaAddend)));
+				int y = (int)Math.round((baseRadius + baseRadius * Math.sin(i * 2 * Math.PI / size + thetaAddend)));
 				addPoint(x,y);
 			}
 		}
@@ -191,22 +195,16 @@ public class PolygonRS extends Polygon
 	
 	Point getCenter()
 	{
-		return center;
+		return new Point(center.x - baseRadius, center.y - baseRadius);
 	}
-	Point getDrawPoint()
+	Polygon getLocatedPolygon()
 	{
-		//	Shift the point to the top-left by the base circle's (the circle used to create this polygon) radius.
-		//	Used for a draw where the point given to start drawing at is the top-left
+		Polygon p = new Polygon();
+		Point offset = getCenter();
+		for (int i = 0; i < npoints; i++)
+			p.addPoint(xpoints[i] + offset.x, ypoints[i] + offset.y);
 		
-		Point a = new Point(xpoints[0], ypoints[0]);
-		Point b = new Point(xpoints[1], ypoints[1]);
-		double hypotenuse = 0.5 * (float) Math.sqrt((b.x - a.x)*(b.x - a.x) + (b.y - a.y) * (b.y - a.y));
-		double theta = (float) (Math.PI / npoints);
-		
-		double xOffset = hypotenuse * Math.cos(theta);
-		double yOffset = hypotenuse * Math.sin(theta);
-
-		return new Point((int) (center.x - xOffset + 0.5), (int) (center.y + yOffset + 0.5));
+		return p;
 	}
 	
 	public void sendInput(Point inputPos, InputEnum inputType)
@@ -234,15 +232,15 @@ public class PolygonRS extends Polygon
     	switch(inputType)
     	{
     	case Create:
-			p.addChild();
+			addChild();
     		break;
     		
     	case AddSide:
-    		p.grow();
+    		grow();
     		break;
     		
    	 	case RemoveSide:
-   	 		p.shrink();
+   	 		shrink();
 			break;
 			
     	case Recolor:
@@ -252,10 +250,10 @@ public class PolygonRS extends Polygon
     	default: break;
     	}
 	}
-	void initializeUpdate(Point screenSize, float deltaTime)
+	void initializeUpdate(Dimension screenSize, float deltaTime)
 	{
 		//	A specialized update as the root does not move (but it stays in the center of the screen)		
-		Point screenMid = new Point((int) (0.5 * screenSize.x + 0.5), (int) (0.5 * screenSize.y + 0.5));
+		Point screenMid = new Point((int) (0.5 * screenSize.width + 0.5), (int) (0.5 * screenSize.height + 0.5));
 		center = screenMid;
 
 		//	Propagate updates from the parent polygon to its children.

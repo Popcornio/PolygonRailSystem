@@ -26,6 +26,7 @@ public class PolygonRailSystem extends JFrame
 
 class PolygonWindow extends JFrame
 {
+	boolean showBase = false;
 	int maxX, maxY, centerX, centerY;
 	PolygonRS root = null;
 	
@@ -157,13 +158,21 @@ class PolygonWindow extends JFrame
 		}
 		else
 		{
+			root.initializeUpdate(getSize(), 0);
+			
 			LinkedList<PolygonRS> polygonRSList = new LinkedList<PolygonRS>(root.getRSList());
 			
 			
 			
 			for (int i = 0; i < polygonRSList.size(); i++)
 			{
-				g.drawPolygon(polygonRSList.get(i));
+				g.drawPolygon(polygonRSList.get(i).getLocatedPolygon());
+				
+				if (showBase)
+				{
+					Point center = polygonRSList.get(i).getCenter();
+					g.drawOval(center.x, center.y, 200, 200);
+				}
 			}
 		}
 	}
