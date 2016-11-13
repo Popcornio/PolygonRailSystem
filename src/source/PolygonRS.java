@@ -65,11 +65,10 @@ public class PolygonRS extends Polygon
 			
 		depth = parent.depth + 1;
 		baseRadius = (int)(Math.pow(parent.baseRadius, 0.9d) + 0.5d);	//	the function to calculate a child base radius is modifiable
-		cyclePeriod = (int)(Math.pow(parent.baseRadius, 1.1d) + 0.5d);	//	the function to calculate a child cycle period is modifiable
+		cyclePeriod = (int)(Math.pow(parent.cyclePeriod, 1.1d) + 0.5d);	//	the function to calculate a child cycle period is modifiable
 			
 		resize(MIN_SIDES);
-		speed = calculateSpeed();	//	speed needs to be calculated AFTER the polygon is defined!
-		
+		speed = calculateSpeed();	//	speed needs to be calculated AFTER the polygon is defined!		
 	}
 	
 	//	Private Methods
@@ -162,7 +161,7 @@ public class PolygonRS extends Polygon
 		if (polygonPosition.currentDistance > abLength)
 		{
 			polygonPosition.pointIndex = (pAi + overflow) % parent.npoints;
-			polygonPosition.currentDistance = -overflow * abLength;
+			polygonPosition.currentDistance = -(overflow - 1) * abLength;
 			update(deltaTime);
 			return;
 		}
@@ -180,32 +179,7 @@ public class PolygonRS extends Polygon
 		//	Propagate updates from the parent polygon to its children.
 		for (int i = 0; i < children.size(); i++)
 			children.get(i).update(deltaTime);
-	}
-	
-	private void applyInput(PolygonRS p, InputEnum inputType)
-	{
-    	switch(inputType)
-    	{
-    	case Create:
-			p.createPolygonRSChild();
-    		break;
-    		
-    	case AddSide:
-    		p.addPolygonSide();
-    		break;
-    		
-   	 	case RemoveSide:
-   	 		p.removePolygonSide();
-			break;
-			
-    	case Recolor:
-    		//	does nothing
-    		break;
-    		
-    	default: break;
-    	}
-	}
-	
+	}	
 	
 	//	Public Methods
 
@@ -227,6 +201,8 @@ public class PolygonRS extends Polygon
 		
 		double perimeter = sideLength * parent.npoints;
 		double speed = perimeter / cyclePeriod;
+
+		//	System.out.println(perimeter + "\t" + cyclePeriod + "\t" + speed);
 		
 		return speed;
 	}
@@ -241,28 +217,6 @@ public class PolygonRS extends Polygon
 		for (int i = 0; i < children.size(); i++)
 			children.get(i).update(deltaTime);
 	}
-	
-	/*
-	public void sendInput(Point inputPos, InputEnum inputType)
-	{
-    	Stack<PolygonRS> polyStack = new Stack<PolygonRS>();	//	a stack prioritizes leaves over roots
-    	polyStack.add(this);	//	input starts at the object used as a reference, and works its way down.
-    	
-    	//	Find a valid PolygonRS to send the input to
-    	while (polyStack.size() > 0)
-    	{
-    		PolygonRS current = polyStack.pop();
-			if (current.getPolygon().contains(inputPos))
-			{
-				applyInput(current, inputType);
-		    	return;
-			}
-    		
-    		for (int i = 0; i < current.children.size(); i++)
-    			polyStack.push(current.children.get(i));
-    	}
-	}
-	*/
 	
 	public void sendInput(Point inputPos, InputEnum inputType)
 	{
