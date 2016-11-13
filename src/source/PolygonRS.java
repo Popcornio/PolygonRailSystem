@@ -74,9 +74,9 @@ public class PolygonRS extends Polygon
 	
 	//	Private Methods
 
-	private void grow() { resize(npoints + 1); }
-	private void shrink() { children.clear(); resize(npoints - 1); }
-	private void addChild()
+	private void addPolygonSide() { resize(npoints + 1); setChildrenInitPos(); }
+	private void removePolygonSide() { children.clear(); resize(npoints - 1); }
+	private void createPolygonRSChild()
 	{
 		if (!canAddChild())
 			return;
@@ -104,8 +104,6 @@ public class PolygonRS extends Polygon
 				int y = (int)Math.round((baseRadius + baseRadius * Math.sin(i * 2 * Math.PI / size + thetaAddend)));
 				addPoint(x,y);
 			}
-
-			setChildrenInitPos();
 		}
 	}
 	
@@ -114,6 +112,7 @@ public class PolygonRS extends Polygon
 		//	Reset the children's positions and then space them relative to each other.
 		if (children.size() == 0)
 			return;
+
 		double timeOffset = children.get(0).cyclePeriod / (double) children.size();
 		for (int i = 0; i < children.size(); i++)
 		{
@@ -188,15 +187,15 @@ public class PolygonRS extends Polygon
     	switch(inputType)
     	{
     	case Create:
-			p.addChild();
+			p.createPolygonRSChild();
     		break;
     		
     	case AddSide:
-    		p.grow();
+    		p.addPolygonSide();
     		break;
     		
    	 	case RemoveSide:
-   	 		p.shrink();
+   	 		p.removePolygonSide();
 			break;
 			
     	case Recolor:
@@ -243,6 +242,7 @@ public class PolygonRS extends Polygon
 			children.get(i).update(deltaTime);
 	}
 	
+	/*
 	public void sendInput(Point inputPos, InputEnum inputType)
 	{
     	Stack<PolygonRS> polyStack = new Stack<PolygonRS>();	//	a stack prioritizes leaves over roots
@@ -260,6 +260,69 @@ public class PolygonRS extends Polygon
     		
     		for (int i = 0; i < current.children.size(); i++)
     			polyStack.push(current.children.get(i));
+    	}
+	}
+	*/
+	
+	public void sendInput(Point inputPos, InputEnum inputType)
+	{
+    	Stack<PolygonRS> polyStack = new Stack<PolygonRS>();	//	a stack prioritizes leaves over roots
+    	polyStack.add(this);	//	input starts at the object used as a reference, and works its way down.
+    	
+    	//	Find a valid PolygonRS to send the input to
+
+    	switch(inputType)
+    	{
+    	case Create:
+        	while (polyStack.size() > 0)
+        	{
+        		PolygonRS current = polyStack.pop();
+    			if (current.getPolygon().contains(inputPos) && current.canAddChild())
+    			{
+    				current.createPolygonRSChild();
+    		    	return;
+    			}
+        		
+        		for (int i = 0; i < current.children.size(); i++)
+        			polyStack.push(current.children.get(i));
+        	}
+    		break;
+    		
+    	case AddSide:
+        	while (polyStack.size() > 0)
+        	{
+        		PolygonRS current = polyStack.pop();
+    			if (current.getPolygon().contains(inputPos) && current.canModifyPolygon())
+    			{
+    				current.addPolygonSide();
+    		    	return;
+    			}
+        		
+        		for (int i = 0; i < current.children.size(); i++)
+        			polyStack.push(current.children.get(i));
+        	}
+    		break;
+    		
+   	 	case RemoveSide:
+   	    	while (polyStack.size() > 0)
+   	    	{
+   	    		PolygonRS current = polyStack.pop();
+   				if (current.getPolygon().contains(inputPos) && current.canModifyPolygon())
+   				{
+   					current.removePolygonSide();
+   			    	return;
+   				}
+   	    		
+   	    		for (int i = 0; i < current.children.size(); i++)
+   	    			polyStack.push(current.children.get(i));
+   	    	}
+			break;
+			
+    	case Recolor:
+    		//	does nothing
+    		break;
+    		
+    	default: break;
     	}
 	}
 	
