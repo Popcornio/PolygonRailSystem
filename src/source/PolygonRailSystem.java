@@ -175,7 +175,7 @@ class PolygonWindow extends JFrame
 				g2.setPaint(Color.BLACK);
 				g2.drawPolygon(polygonRSList.get(i).getPolygon());
 				g2.setPaint(colors[(colorIndex++) % 7]); //%3 if adding more colors increase
-                		g2.fill(p); //fill
+                		g2.fill(polygonRSList.get(i).getPolygon()); //fill
 				
 				if (showBase)
 				{
