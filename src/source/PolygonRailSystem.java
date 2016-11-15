@@ -1,20 +1,10 @@
 package source;
-/**
- * Notes:		October 20th
- * 				For testing purposes, I set a dialog box to demonstrate adding and removing
- * 				the first polygon to the screen. We discussed that removing the base polygon
- * 				would show the introduction text again, so that's what I was trying to simulate.
- */
-
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
-
 import javax.swing.*;
-
 import source.PolygonRS.InputEnum;
-
 
 public class PolygonRailSystem extends JFrame
 {
@@ -29,6 +19,13 @@ class PolygonWindow extends JFrame
 	boolean showBase = false;
 	int maxX, maxY, centerX, centerY;
 	PolygonRS root = null;
+	
+	// Used for to call the repaint() method to allow the polygons to move
+	Timer timer = new Timer(100, new ActionListener() {
+		public void actionPerformed(ActionEvent evt) {
+			repaint();
+	    }    
+	});
 	
 	public PolygonWindow()
 	{
@@ -64,7 +61,6 @@ class PolygonWindow extends JFrame
 				//System.out.println("Attempting to Grow Polygon...");
 				if (root != null)
 					root.sendInput(e.getPoint(), InputEnum.AddSide);
-				repaint();
 			}
 			if (SwingUtilities.isRightMouseButton(e))
 			{
@@ -73,7 +69,6 @@ class PolygonWindow extends JFrame
 					root = null;
 				else if (root != null)
 					root.sendInput(e.getPoint(), InputEnum.RemoveSide);
-				repaint();
 			}
 			if (SwingUtilities.isMiddleMouseButton(e))
 			{
@@ -82,19 +77,19 @@ class PolygonWindow extends JFrame
 					root.sendInput(e.getPoint(), InputEnum.Create);
 				else
 					root = new PolygonRS();
-				repaint();
 			}
 			
+			timer.start();
 			return;
 		}
 		
 		public void mousePressed(MouseEvent e)
-		{
+		{			
 			return;
 		}
 		
 		public void mouseReleased(MouseEvent e)
-		{
+		{	
 			return;
 		}
 		
@@ -121,8 +116,9 @@ class PolygonWindow extends JFrame
 						+ "Daniel Pacheco, Jessican Jennings,\n"
 						+ "Zackary Hoyt, Tiffany Engen\n\n"
 						+ "Controls:\n"
-						+ "Left Click: Add Polygon\n"
-						+ "Right Click - Remove Polygon\n\n"
+						+ "Left Click: Grow Polygon (+1 side)\n"
+						+ "Middle Click: Create Polygon\n"
+						+ "Right Click - Shrink Polygon (-1 side)\n\n"
 						+ "Click anywhere to continue...";
 		
 		g.setFont(new Font("Verdana", Font.PLAIN, 14));
@@ -154,13 +150,14 @@ class PolygonWindow extends JFrame
 		initgr();
 		super.paint(g);
 		
-		if (root == null )
+		if (root == null)
 		{
+			timer.stop();
 			introductionScreen(g);
 		}
 		else
 		{
-			double timeDelta = 0;
+			double timeDelta = 0.08;
 			root.initializeUpdate(getSize(), timeDelta);
 			LinkedList<PolygonRS> polygonRSList = new LinkedList<PolygonRS>(root.getRSList());
 
