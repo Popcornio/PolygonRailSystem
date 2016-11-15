@@ -156,14 +156,17 @@ public class PolygonRS extends Polygon
 
 		polygonPosition.currentDistance += deltaTime * speed;	//	new distance along current line
 		
-		//	Account for overlapping
-		int overflow = (int) (polygonPosition.currentDistance / abLength);
-		if (polygonPosition.currentDistance > abLength)
+		//	Account for passing corners
+		double overflow = (polygonPosition.currentDistance / abLength);
+		if (overflow >= 1)
 		{
-			polygonPosition.pointIndex = (pAi + overflow) % parent.npoints;
-			polygonPosition.currentDistance = -(overflow - 1) * abLength;
-			update(deltaTime);
-			return;
+			polygonPosition.pointIndex = (pAi + (int) overflow) % parent.npoints;
+			polygonPosition.currentDistance = (overflow - (int) overflow) * abLength;
+
+			pAi = polygonPosition.pointIndex;
+			pBi = (pAi + 1) % parent.npoints;
+			a = new Point(parent.xpoints[pAi], parent.ypoints[pAi]);
+			b = new Point(parent.xpoints[pBi], parent.ypoints[pBi]);
 		}
 		
 		//	Get unit vector
