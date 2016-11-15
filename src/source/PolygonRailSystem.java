@@ -8,6 +8,9 @@ package source;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+
 import javax.swing.*;
 
 import source.PolygonRS.InputEnum;
@@ -23,6 +26,7 @@ public class PolygonRailSystem extends JFrame
 
 class PolygonWindow extends JFrame
 {
+	boolean showBase = false;
 	int maxX, maxY, centerX, centerY;
 	PolygonRS root = null;
 	
@@ -36,6 +40,8 @@ class PolygonWindow extends JFrame
 		
 		Handler h = new Handler();
 		addMouseListener(h);
+
+		createBufferStrategy(3);
 	}
 	
 	// Retrieves the dimensions of the frame
@@ -55,15 +61,27 @@ class PolygonWindow extends JFrame
 		{
 			if (SwingUtilities.isLeftMouseButton(e))
 			{
-				//JOptionPane.showMessageDialog(null, "Polygon Added");
-				
+				//System.out.println("Attempting to Grow Polygon...");
+				if (root != null)
+					root.sendInput(e.getPoint(), InputEnum.AddSide);
 				repaint();
 			}
 			if (SwingUtilities.isRightMouseButton(e))
 			{
-				//JOptionPane.showMessageDialog(null, "Polygon Removed");
-				if (root != null)
+				//System.out.println("Attempting to Shrink Polygon...");
+				if (root != null && root.npoints == PolygonRS.MIN_SIDES && root.canModifyPolygon() && root.getPolygon().contains(e.getPoint()))
+					root = null;
+				else if (root != null)
 					root.sendInput(e.getPoint(), InputEnum.RemoveSide);
+				repaint();
+			}
+			if (SwingUtilities.isMiddleMouseButton(e))
+			{
+				//System.out.println("Attempting to Create Polygon...");
+				if (root != null)
+					root.sendInput(e.getPoint(), InputEnum.Create);
+				else
+					root = new PolygonRS();
 				repaint();
 			}
 			
@@ -137,10 +155,26 @@ class PolygonWindow extends JFrame
 		super.paint(g);
 		
 		if (root == null )
+		{
 			introductionScreen(g);
+		}
 		else
 		{
-			
+			double timeDelta = 0;
+			root.initializeUpdate(getSize(), timeDelta);
+			LinkedList<PolygonRS> polygonRSList = new LinkedList<PolygonRS>(root.getRSList());
+
+			for (int i = 0; i < polygonRSList.size(); i++)
+			{
+				g.drawPolygon(polygonRSList.get(i).getPolygon());
+				
+				if (showBase)
+				{
+					Point center = polygonRSList.get(i).getPolygonOrigin();
+					int size = 2 * polygonRSList.get(i).getBaseRadius();
+					g.drawOval(center.x, center.y, size, size);
+				}
+			}
 		}
 	}
 	
