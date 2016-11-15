@@ -160,20 +160,31 @@ class PolygonWindow extends JFrame
 		}
 		else
 		{
+			Graphics2D g2 = (Graphics2D) g;
+           		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			Color[] colors = { Color.YELLOW , Color.RED, Color.BLUE, Color.PINK, Color.ORANGE, Color.GRAY, Color.GREEN};
+			g2.setStroke(new BasicStroke(4)); //line thickness
+           		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.60f)); //the opacity of the rectangles
+           		int colorIndex = 0;
 			double timeDelta = 0;
 			root.initializeUpdate(getSize(), timeDelta);
 			LinkedList<PolygonRS> polygonRSList = new LinkedList<PolygonRS>(root.getRSList());
 
 			for (int i = 0; i < polygonRSList.size(); i++)
 			{
-				g.drawPolygon(polygonRSList.get(i).getPolygon());
+				g2.setPaint(Color.BLACK);
+				g2.drawPolygon(polygonRSList.get(i).getPolygon());
+				g2.setPaint(colors[(colorIndex++) % 7]); //%3 if adding more colors increase
+                		g2.fill(p); //fill
 				
 				if (showBase)
 				{
 					Point center = polygonRSList.get(i).getPolygonOrigin();
 					int size = 2 * polygonRSList.get(i).getBaseRadius();
-					g.drawOval(center.x, center.y, size, size);
+					g2.drawOval(center.x, center.y, size, size);
 				}
+				
+				
 			}
 		}
 	}
