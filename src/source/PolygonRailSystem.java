@@ -23,19 +23,19 @@ public class PolygonRailSystem
 	public static void main(String[] args)
 	{
         JFrame frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        frame.setVisible(true);
         
         frame.setTitle("Polygon Rail System");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setBounds(50, 50, 700, 500);
-        frame.	setResizable(true);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH); 
+        frame.setResizable(true);
 
-        frame.createBufferStrategy(2);
+        frame.createBufferStrategy(3);
 
-		//PolygonWindow prs = new PolygonWindow();
-        frame.add(new PolygonWindow());
+		PolygonWindow prs = new PolygonWindow();
+		//prs.preset4();
+		
+        frame.add(prs);
         frame.setVisible(true);
 	}
 }
@@ -49,13 +49,13 @@ class PolygonWindow extends JPanel
 	long lastUpdate = 0;
 	
 	// Used for to call the repaint() method to allow the polygons to move
-	Timer logicTimer = new Timer(50, new ActionListener(){
+	Timer logicTimer = new Timer(20, new ActionListener(){
 		public void actionPerformed(ActionEvent evt) {
 			root.initializeUpdate(getSize(), (System.currentTimeMillis() - lastUpdate) / 1000d);
 			lastUpdate = System.currentTimeMillis();
 	    }    
 	});
-	Timer graphicsTimer = new Timer(100, new ActionListener() {
+	Timer graphicsTimer = new Timer(20, new ActionListener() {
 		public void actionPerformed(ActionEvent evt) {
 			repaint();
 	    }    
@@ -93,30 +93,90 @@ class PolygonWindow extends JPanel
 						root.initializeUpdate(getSize(), 0);
 					}
 				}
-				logicTimer.start();
-				graphicsTimer.start();
+				restartTimers();
 			} 
 		}); 
+
+	}
+	
+	void restartTimers()
+	{
+		lastUpdate = System.currentTimeMillis();
+		logicTimer.restart();
+		graphicsTimer.start();
+	}
+	
+	void preset1()
+	{
+		root = new PolygonRS();
+		Queue<PolygonRS> q = new ArrayDeque<PolygonRS>();
+		q.add(root);
 		
-		if (false)
+		while (!q.isEmpty())
 		{
-			root = new PolygonRS();
-			Queue<PolygonRS> q = new ArrayDeque();
-			q.add(root);
-			
-			while (!q.isEmpty())
-			{
-				for (int i = 0; i < 16; i++)
-					q.peek().addPolygonSide();
-				for (int i = 0; i < 4; i++)
-					q.peek().createPolygonRSChild();
-				for(int i = 0; i < 4; i++)
-					q.add(q.peek().getChildren().get(i));
-				q.remove();
-			}
-			graphicsTimer.start();
-			repaint();
+			PolygonRS p = q.remove();
+			for (int i = 0; i < 16; i++)
+				p.addPolygonSide();
+			for (int i = 0; i < 4; i++)
+				p.createPolygonRSChild();
+			for(int i = 0; i < p.getChildren().size(); i++)
+				q.add(p.getChildren().get(i));
 		}
+		restartTimers();
+	}
+	void preset2()
+	{
+		root = new PolygonRS();
+		Queue<PolygonRS> q = new ArrayDeque<PolygonRS>();
+		q.add(root);
+		
+		while (!q.isEmpty())
+		{
+			PolygonRS p = q.remove();
+			for (int i = 0; i < 8; i++)
+				p.addPolygonSide();
+			for (int i = 0; i < 3; i++)
+				p.createPolygonRSChild();
+			for(int i = 0; i < p.getChildren().size(); i++)
+				q.add(p.getChildren().get(i));
+		}
+		restartTimers();
+	}
+	void preset3()
+	{
+		root = new PolygonRS();
+		Queue<PolygonRS> q = new ArrayDeque<PolygonRS>();
+		q.add(root);
+		
+		while (!q.isEmpty())
+		{
+			PolygonRS p = q.remove();
+			for (int i = 0; i < 4; i++)
+				p.addPolygonSide();
+			for (int i = 0; i < 2; i++)
+				p.createPolygonRSChild();
+			for(int i = 0; i < p.getChildren().size(); i++)
+				q.add(p.getChildren().get(i));
+		}
+		restartTimers();
+	}
+	void preset4()
+	{
+		root = new PolygonRS();
+		Queue<PolygonRS> q = new ArrayDeque<PolygonRS>();
+		q.add(root);
+		
+		while (!q.isEmpty())
+		{
+			PolygonRS p = q.remove();
+			for (int i = 0; i < 2; i++)
+				p.addPolygonSide();
+			for (int i = 0; i < 1; i++)
+				p.createPolygonRSChild();
+			for(int i = 0; i < p.getChildren().size(); i++)
+				q.add(p.getChildren().get(i));
+		}
+		restartTimers();
 	}
 	
 	// Retrieves the dimensions of the frame
