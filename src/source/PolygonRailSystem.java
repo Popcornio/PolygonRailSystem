@@ -1,10 +1,20 @@
 package source;
+/**
+ * Notes:		October 20th
+ * 				For testing purposes, I set a dialog box to demonstrate adding and removing
+ * 				the first polygon to the screen. We discussed that removing the base polygon
+ * 				would show the introduction text again, so that's what I was trying to simulate.
+ */
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
+
 import javax.swing.*;
+
 import source.PolygonRS.InputEnum;
+
 
 public class PolygonRailSystem extends JFrame
 {
@@ -84,12 +94,12 @@ class PolygonWindow extends JFrame
 		}
 		
 		public void mousePressed(MouseEvent e)
-		{			
+		{
 			return;
 		}
 		
 		public void mouseReleased(MouseEvent e)
-		{	
+		{
 			return;
 		}
 		
@@ -116,9 +126,9 @@ class PolygonWindow extends JFrame
 						+ "Daniel Pacheco, Jessican Jennings,\n"
 						+ "Zackary Hoyt, Tiffany Engen\n\n"
 						+ "Controls:\n"
-						+ "Left Click: Grow Polygon (+1 side)\n"
-						+ "Middle Click: Create Polygon\n"
-						+ "Right Click - Shrink Polygon (-1 side)\n\n"
+						+ "Left Click: Grow Polygon (+side)\n"
+						+ "Middle Click: Add Polygon\n"
+						+ "Right Click: Shrink Polygon (-side)\n\n"
 						+ "Click anywhere to continue...";
 		
 		g.setFont(new Font("Verdana", Font.PLAIN, 14));
@@ -150,29 +160,38 @@ class PolygonWindow extends JFrame
 		initgr();
 		super.paint(g);
 		
-		if (root == null)
+		if (root == null )
 		{
 			timer.stop();
 			introductionScreen(g);
 		}
 		else
 		{
+			Graphics2D g2 = (Graphics2D) g;
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			Color[] colors = {Color.YELLOW , Color.RED, Color.BLUE, Color.PINK, Color.ORANGE, Color.GRAY, Color.GREEN};
+			g2.setStroke(new BasicStroke(4));	//line thickness
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.60f)); //the opacity of the rectangles
+			int colorIndex = 0;
+
 			double timeDelta = 0.08;
 			root.initializeUpdate(getSize(), timeDelta);
 			LinkedList<PolygonRS> polygonRSList = new LinkedList<PolygonRS>(root.getRSList());
 
 			for (int i = 0; i < polygonRSList.size(); i++)
 			{
+				g2.setPaint(Color.BLACK);
 				g.drawPolygon(polygonRSList.get(i).getPolygon());
-				
+				g2.setPaint(colors[(colorIndex++) % 7]);	//%3 if adding more colors increase
+				g2.fill(polygonRSList.get(i).getPolygon());	//fill
+
 				if (showBase)
 				{
 					Point center = polygonRSList.get(i).getPolygonOrigin();
 					int size = 2 * polygonRSList.get(i).getBaseRadius();
-					g.drawOval(center.x, center.y, size, size);
+					g2.drawOval(center.x, center.y, size, size);
 				}
 			}
 		}
 	}
-	
 }
