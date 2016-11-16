@@ -27,7 +27,7 @@ public class PolygonRS extends Polygon
 	static final int MAX_DEPTH = 5;
 
 	static final int INITIAL_DEPTH = 0;	//	this should never be modified; this is just here to describe the value
-	static final int INITIAL_RADIUS = 100;	//	radius of the circle-base used to draw a polygon with equal sides
+	static final int INITIAL_RADIUS = 200;	//	radius of the circle-base used to draw a polygon with equal sides
 	static final int INITIAL_CYCLE_PERIOD = 10;
 	
 	//	Private Attributes
@@ -65,7 +65,7 @@ public class PolygonRS extends Polygon
 			
 		depth = parent.depth + 1;
 		baseRadius = (int)(Math.pow(parent.baseRadius, 0.9d) + 0.5d);	//	the function to calculate a child base radius is modifiable
-		cyclePeriod = (int)(Math.pow(parent.cyclePeriod, 1.1d) + 0.5d);	//	the function to calculate a child cycle period is modifiable
+		cyclePeriod = (int)(Math.pow(parent.cyclePeriod, .8d) + 0.5d);	//	the function to calculate a child cycle period is modifiable
 			
 		resize(MIN_SIDES);
 		speed = calculateSpeed();	//	speed needs to be calculated AFTER the polygon is defined!		
@@ -73,9 +73,9 @@ public class PolygonRS extends Polygon
 	
 	//	Private Methods
 
-	private void addPolygonSide() { resize(npoints + 1); setChildrenInitPos(); }
-	private void removePolygonSide() { children.clear(); resize(npoints - 1); }
-	private void createPolygonRSChild()
+	public void addPolygonSide() { resize(npoints + 1); setChildrenInitPos(); }
+	public void removePolygonSide() { children.clear(); resize(npoints - 1); }
+	public void createPolygonRSChild()
 	{
 		if (!canAddChild())
 			return;
@@ -86,6 +86,7 @@ public class PolygonRS extends Polygon
 		//	Create the new child and add it to the list of children
 		setChildrenInitPos();
 	}
+	public List<PolygonRS> getChildren(){return children;}
 	private void resize(int size)
 	{
 		if (size < MIN_SIDES)

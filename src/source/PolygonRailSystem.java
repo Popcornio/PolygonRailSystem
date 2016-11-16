@@ -8,8 +8,10 @@ package source;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Queue;
 
 import javax.swing.*;
 
@@ -20,31 +22,49 @@ public class PolygonRailSystem
 {
 	public static void main(String[] args)
 	{
-		PolygonWindow prs = new PolygonWindow();
+        JFrame frame = new JFrame();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.pack();
+        frame.setVisible(true);
+        
+        frame.setTitle("Polygon Rail System");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setBounds(50, 50, 700, 500);
+        frame.	setResizable(true);
+
+        frame.createBufferStrategy(2);
+
+		//PolygonWindow prs = new PolygonWindow();
+        frame.add(new PolygonWindow());
+        frame.setVisible(true);
 	}
 }
 
-class PolygonWindow extends JFrame
+class PolygonWindow extends JPanel
 {
 	boolean showBase = false;
 	int maxX, maxY, centerX, centerY;
 	PolygonRS root = null;
+
+	long lastUpdate = 0;
 	
 	// Used for to call the repaint() method to allow the polygons to move
-	Timer timer = new Timer(100, new ActionListener() {
+	Timer logicTimer = new Timer(50, new ActionListener(){
+		public void actionPerformed(ActionEvent evt) {
+			root.initializeUpdate(getSize(), (System.currentTimeMillis() - lastUpdate) / 1000d);
+			lastUpdate = System.currentTimeMillis();
+	    }    
+	});
+	Timer graphicsTimer = new Timer(100, new ActionListener() {
 		public void actionPerformed(ActionEvent evt) {
 			repaint();
 	    }    
 	});
 	
+	
 	public PolygonWindow()
 	{
-		setTitle("Polygon Rail System");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(50, 50, 700, 500);
-		setResizable(true);
-		setVisible(true);
-
+		
 		addMouseListener(new MouseAdapter() { 
 			public void mousePressed(MouseEvent e) 
 			{ 
@@ -73,11 +93,30 @@ class PolygonWindow extends JFrame
 						root.initializeUpdate(getSize(), 0);
 					}
 				}
-				timer.start();
+				logicTimer.start();
+				graphicsTimer.start();
 			} 
 		}); 
 		
-		createBufferStrategy(3);
+		if (false)
+		{
+			root = new PolygonRS();
+			Queue<PolygonRS> q = new ArrayDeque();
+			q.add(root);
+			
+			while (!q.isEmpty())
+			{
+				for (int i = 0; i < 16; i++)
+					q.peek().addPolygonSide();
+				for (int i = 0; i < 4; i++)
+					q.peek().createPolygonRSChild();
+				for(int i = 0; i < 4; i++)
+					q.add(q.peek().getChildren().get(i));
+				q.remove();
+			}
+			graphicsTimer.start();
+			repaint();
+		}
 	}
 	
 	// Retrieves the dimensions of the frame
@@ -138,7 +177,8 @@ class PolygonWindow extends JFrame
 		
 		if (root == null )
 		{
-			timer.stop();
+			graphicsTimer.stop();
+			logicTimer.stop();
 			introductionScreen(g);
 		}
 		else
@@ -150,8 +190,6 @@ class PolygonWindow extends JFrame
 			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.60f)); //the opacity of the rectangles
 			int colorIndex = 0;
 
-			double timeDelta = 0.08;
-			root.initializeUpdate(getSize(), timeDelta);
 			LinkedList<PolygonRS> polygonRSList = new LinkedList<PolygonRS>(root.getRSList());
 
 			for (int i = 0; i < polygonRSList.size(); i++)
