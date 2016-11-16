@@ -28,7 +28,7 @@ public class PolygonRS extends Polygon
 
 	static final int INITIAL_DEPTH = 0;	//	this should never be modified; this is just here to describe the value
 	static final int INITIAL_RADIUS = 200;	//	radius of the circle-base used to draw a polygon with equal sides
-	static final int INITIAL_CYCLE_PERIOD = 10;
+	static final int INITIAL_CYCLE_PERIOD = 16;
 	
 	//	Private Attributes
 	private PolygonRS parent = null;
@@ -64,8 +64,8 @@ public class PolygonRS extends Polygon
 		this.parent = parent;
 			
 		depth = parent.depth + 1;
-		baseRadius = (int)(Math.pow(parent.baseRadius, 0.9d) + 0.5d);	//	the function to calculate a child base radius is modifiable
-		cyclePeriod = (int)(Math.pow(parent.cyclePeriod, .8d) + 0.5d);	//	the function to calculate a child cycle period is modifiable
+		baseRadius = (int)(Math.pow(parent.baseRadius, 0.925d) + 0.5d);	//	the function to calculate a child base radius is modifiable
+		cyclePeriod = (int)(Math.pow(parent.cyclePeriod, 1) + 0.5d);	//	the function to calculate a child cycle period is modifiable
 			
 		resize(MIN_SIDES);
 		speed = calculateSpeed();	//	speed needs to be calculated AFTER the polygon is defined!		
@@ -117,7 +117,8 @@ public class PolygonRS extends Polygon
 		for (int i = 0; i < children.size(); i++)
 		{
 			children.get(i).resetPosition();
-			children.get(i).update(i * timeOffset);
+			double deltaTime = i * timeOffset;
+			children.get(i).update(deltaTime);
 		}
 	}
 	private void resetPosition()
@@ -144,7 +145,6 @@ public class PolygonRS extends Polygon
 	private void update(double deltaTime)
 	{
 		//	Update position on parent rail-system
-		
 		//	Update self, then children
 
 		int pAi = polygonPosition.pointIndex;
