@@ -16,7 +16,7 @@ import javax.swing.*;
 import source.PolygonRS.InputEnum;
 
 
-public class PolygonRailSystem extends JFrame
+public class PolygonRailSystem
 {
 	public static void main(String[] args)
 	{
@@ -44,10 +44,39 @@ class PolygonWindow extends JFrame
 		setBounds(50, 50, 700, 500);
 		setResizable(true);
 		setVisible(true);
-		
-		Handler h = new Handler();
-		addMouseListener(h);
 
+		addMouseListener(new MouseAdapter() { 
+			public void mousePressed(MouseEvent e) 
+			{ 
+				if (SwingUtilities.isLeftMouseButton(e))
+				{
+					//System.out.println("Attempting to Grow Polygon...");
+					if (root != null)
+						root.sendInput(e.getPoint(), InputEnum.AddSide);
+				}
+				if (SwingUtilities.isRightMouseButton(e))
+				{
+					//System.out.println("Attempting to Shrink Polygon...");
+					if (root != null && root.npoints == PolygonRS.MIN_SIDES && root.canModifyPolygon() && root.getPolygon().contains(e.getPoint()))
+						root = null;
+					else if (root != null)
+						root.sendInput(e.getPoint(), InputEnum.RemoveSide);
+				}
+				if (SwingUtilities.isMiddleMouseButton(e))
+				{
+					//System.out.println("Attempting to Create Polygon...");
+					if (root != null)
+						root.sendInput(e.getPoint(), InputEnum.Create);
+					else
+					{
+						root = new PolygonRS();
+						root.initializeUpdate(getSize(), 0);
+					}
+				}
+				timer.start();
+			} 
+		}); 
+		
 		createBufferStrategy(3);
 	}
 	
@@ -59,59 +88,6 @@ class PolygonWindow extends JFrame
 		   maxY = d.height - 1;
 		   centerX = maxX / 2;
 		   centerY = maxY / 2;
-	}
-	
-	// MouseListener functionality
-	private class Handler implements MouseListener
-	{
-		public void mouseClicked(MouseEvent e)
-		{
-			if (SwingUtilities.isLeftMouseButton(e))
-			{
-				//System.out.println("Attempting to Grow Polygon...");
-				if (root != null)
-					root.sendInput(e.getPoint(), InputEnum.AddSide);
-			}
-			if (SwingUtilities.isRightMouseButton(e))
-			{
-				//System.out.println("Attempting to Shrink Polygon...");
-				if (root != null && root.npoints == PolygonRS.MIN_SIDES && root.canModifyPolygon() && root.getPolygon().contains(e.getPoint()))
-					root = null;
-				else if (root != null)
-					root.sendInput(e.getPoint(), InputEnum.RemoveSide);
-			}
-			if (SwingUtilities.isMiddleMouseButton(e))
-			{
-				//System.out.println("Attempting to Create Polygon...");
-				if (root != null)
-					root.sendInput(e.getPoint(), InputEnum.Create);
-				else
-					root = new PolygonRS();
-			}
-			
-			timer.start();
-			return;
-		}
-		
-		public void mousePressed(MouseEvent e)
-		{
-			return;
-		}
-		
-		public void mouseReleased(MouseEvent e)
-		{
-			return;
-		}
-		
-		public void mouseEntered(MouseEvent e)
-		{
-			return;
-		}
-		
-		public void mouseExited(MouseEvent e)
-		{
-			return;
-		}
 	}
 	
 	// Used to display the introduction text and ensures the text is centered onto the canvas
