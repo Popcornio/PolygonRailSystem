@@ -27,8 +27,8 @@ public class PolygonRS extends Polygon
 	static final int MAX_DEPTH = 5;
 
 	static final int INITIAL_DEPTH = 0;	//	this should never be modified; this is just here to describe the value
-	static final int INITIAL_RADIUS = 200;	//	radius of the circle-base used to draw a polygon with equal sides
-	static final int INITIAL_CYCLE_PERIOD = 16;
+	static final int DEFAULT_INITIAL_RADIUS = 200;	//	radius of the circle-base used to draw a polygon with equal sides
+	static final int DEFAULT_INITIAL_CYCLE_PERIOD = 16;
 	
 	//	Private Attributes
 	private PolygonRS parent = null;
@@ -50,12 +50,24 @@ public class PolygonRS extends Polygon
 		this.parent = null;
 		
 		depth = INITIAL_DEPTH;
-		baseRadius = INITIAL_RADIUS;
-		cyclePeriod = INITIAL_CYCLE_PERIOD;
+		baseRadius = DEFAULT_INITIAL_RADIUS;
+		cyclePeriod = DEFAULT_INITIAL_CYCLE_PERIOD;
 			
 		resize(MIN_SIDES);
 		speed = calculateSpeed();	//	speed needs to be calculated AFTER the polygon is defined!
 	}
+	PolygonRS(int baseRadius, int cyclePeriod)
+	{
+		this.parent = null;
+		
+		depth = INITIAL_DEPTH;
+		this.baseRadius = baseRadius <= 0? DEFAULT_INITIAL_RADIUS : baseRadius;
+		this.cyclePeriod = cyclePeriod == 0? DEFAULT_INITIAL_CYCLE_PERIOD : cyclePeriod; 
+
+		resize(MIN_SIDES);
+		speed = calculateSpeed();	//	speed needs to be calculated AFTER the polygon is defined!
+	}
+	
 	private PolygonRS(PolygonRS parent)
 	{
 		if (parent == null)
