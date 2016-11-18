@@ -1,15 +1,8 @@
 package source;
-/**
- * Notes:		October 20th
- * 				For testing purposes, I set a dialog box to demonstrate adding and removing
- * 				the first polygon to the screen. We discussed that removing the base polygon
- * 				would show the introduction text again, so that's what I was trying to simulate.
- */
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -42,6 +35,8 @@ public class PolygonRailSystem
 
 class PolygonWindow extends JPanel
 {
+	private static final long serialVersionUID = 1L;
+	
 	boolean showBase = false;
 	int maxX, maxY, centerX, centerY;
 	PolygonRS root = null;
