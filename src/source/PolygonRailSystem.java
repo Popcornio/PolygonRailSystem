@@ -232,7 +232,7 @@ class PolygonWindow extends JPanel
 		
 		String intro =    "Polygon Rail System\n"
 						+ "Team #8\n"
-						+ "Daniel Pacheco, Jessican Jennings,\n"
+						+ "Daniel Pacheco, Jessica Jennings,\n"
 						+ "Zackary Hoyt, Tiffany Engen\n\n"
 						+ "Controls:\n"
 						+ "Left Click: Grow Polygon (+side)\n"
