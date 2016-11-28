@@ -26,10 +26,49 @@ public class PolygonRailSystem
         frame.createBufferStrategy(3);
 
 		PolygonWindow prs = new PolygonWindow();
-		//prs.preset4();
 		
         frame.add(prs);
         frame.setVisible(true);
+        
+        //	Add Input Listeners
+        
+        frame.addKeyListener(new KeyListener() 
+        {
+            @Override
+            public void keyPressed(KeyEvent e) 
+            {
+            	switch (e.getKeyChar())
+            	{
+            	case 'p':
+            		prs.logicRunning = !prs.logicRunning;
+            		break;
+            		
+            	case '0':
+            		prs.root = null;
+            		break;
+            	case '1':
+            		prs.preset1();
+            		break;
+            	case'2':
+            		prs.preset2();
+            		break;
+            	case '3':
+            		prs.preset3();
+            		break;
+            	case '4':
+            		prs.preset4();
+            		break;
+            		
+            	default:
+            		break;
+            	}
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) { }
+            @Override
+            public void keyTyped(KeyEvent e) { }
+        });
 	}
 }
 
@@ -42,11 +81,13 @@ class PolygonWindow extends JPanel
 	PolygonRS root = null;
 
 	long lastUpdate = 0;
+	boolean logicRunning = true;
 	
 	// Used for to call the repaint() method to allow the polygons to move
 	Timer logicTimer = new Timer(20, new ActionListener(){
 		public void actionPerformed(ActionEvent evt) {
-			root.initializeUpdate(getSize(), (System.currentTimeMillis() - lastUpdate) / 1000d);
+			if (logicRunning && root != null)
+				root.initializeUpdate(getSize(), (System.currentTimeMillis() - lastUpdate) / 1000d);
 			lastUpdate = System.currentTimeMillis();
 	    }    
 	});
@@ -56,10 +97,8 @@ class PolygonWindow extends JPanel
 	    }    
 	});
 	
-	
-	public PolygonWindow()
+	PolygonWindow()
 	{
-		
 		addMouseListener(new MouseAdapter() { 
 			public void mousePressed(MouseEvent e) 
 			{ 
@@ -88,10 +127,10 @@ class PolygonWindow extends JPanel
 						root.initializeUpdate(getSize(), 0);
 					}
 				}
-				restartTimers();
+				if (root != null)
+					restartTimers();
 			} 
-		}); 
-
+		});
 	}
 	
 	void restartTimers()
@@ -101,7 +140,7 @@ class PolygonWindow extends JPanel
 		graphicsTimer.start();
 	}
 	
-	void preset1()
+	void preset4()
 	{
 		root = new PolygonRS();
 		Queue<PolygonRS> q = new ArrayDeque<PolygonRS>();
@@ -119,7 +158,7 @@ class PolygonWindow extends JPanel
 		}
 		restartTimers();
 	}
-	void preset2()
+	void preset3()
 	{
 		root = new PolygonRS();
 		Queue<PolygonRS> q = new ArrayDeque<PolygonRS>();
@@ -137,7 +176,7 @@ class PolygonWindow extends JPanel
 		}
 		restartTimers();
 	}
-	void preset3()
+	void preset2()
 	{
 		root = new PolygonRS();
 		Queue<PolygonRS> q = new ArrayDeque<PolygonRS>();
@@ -155,7 +194,7 @@ class PolygonWindow extends JPanel
 		}
 		restartTimers();
 	}
-	void preset4()
+	void preset1()
 	{
 		root = new PolygonRS();
 		Queue<PolygonRS> q = new ArrayDeque<PolygonRS>();

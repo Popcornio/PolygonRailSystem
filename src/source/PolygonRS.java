@@ -27,7 +27,7 @@ public class PolygonRS extends Polygon
 	static final int MAX_DEPTH = 5;
 
 	static final int INITIAL_DEPTH = 0;	//	this should never be modified; this is just here to describe the value
-	static final int DEFAULT_INITIAL_RADIUS = 200;	//	radius of the circle-base used to draw a polygon with equal sides
+	static final int DEFAULT_INITIAL_RADIUS = 170;	//	radius of the circle-base used to draw a polygon with equal sides
 	static final int DEFAULT_INITIAL_CYCLE_PERIOD = 16;
 	
 	//	Private Attributes
