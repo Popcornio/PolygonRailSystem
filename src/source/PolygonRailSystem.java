@@ -39,9 +39,25 @@ public class PolygonRailSystem
             {
             	switch (e.getKeyChar())
             	{
+            	case 'o':
+            		prs.showBase = !prs.showBase;
+            		break;
             	case 'p':
             		prs.logicRunning = !prs.logicRunning;
             		break;
+            	case '[':
+            		if (prs.root != null)
+            			prs.root.adjustSpeed(-1);
+            		break;
+            	case ']':
+            		if (prs.root != null)
+            			prs.root.adjustSpeed(1);
+            		break;
+            	case 'r':
+            		if (prs.root != null)
+            			prs.root.resetCyclePeriod();
+            		break;
+            		
             		
             	case '0':
             		prs.root = null;

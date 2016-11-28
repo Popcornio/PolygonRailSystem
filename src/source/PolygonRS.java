@@ -76,8 +76,8 @@ public class PolygonRS extends Polygon
 		this.parent = parent;
 			
 		depth = parent.depth + 1;
-		baseRadius = (int)(Math.pow(parent.baseRadius, 0.925d) + 0.5d);	//	the function to calculate a child base radius is modifiable
-		cyclePeriod = (int)(Math.pow(parent.cyclePeriod, 1) + 0.5d);	//	the function to calculate a child cycle period is modifiable
+		baseRadius = calculateBaseRadius();
+		cyclePeriod = calculateCyclePeriod();
 			
 		resize(MIN_SIDES);
 		speed = calculateSpeed();	//	speed needs to be calculated AFTER the polygon is defined!		
@@ -222,6 +222,14 @@ public class PolygonRS extends Polygon
 		
 		return speed;
 	}
+	public int calculateCyclePeriod()
+	{
+		return (int)(Math.pow(parent.cyclePeriod, 1) + 0.5d);	//	the function to calculate a child cycle period is modifiable
+	}
+	public int calculateBaseRadius()
+	{
+		return (int)(Math.pow(parent.baseRadius, 0.925d) + 0.5d);	//	the function to calculate a child base radius is modifiable
+	}
 	
 	public void initializeUpdate(Dimension screenSize, double deltaTime)
 	{
@@ -328,4 +336,31 @@ public class PolygonRS extends Polygon
 		return p;
 	}
 
+	public void resetCyclePeriod()
+	{
+		cyclePeriod = DEFAULT_INITIAL_CYCLE_PERIOD; 
+		speed = calculateSpeed();
+		
+		List<PolygonRS> rsList = getRSList();
+		for(int i = 1; i < rsList.size(); i++)
+		{
+			rsList.get(i).cyclePeriod = rsList.get(i).calculateCyclePeriod();
+			rsList.get(i).speed = rsList.get(i).calculateSpeed();
+		}
+	}
+	public void adjustSpeed(int adjustment)
+	{
+		if (cyclePeriod + adjustment < 1)
+			return;
+		
+		cyclePeriod += adjustment;
+		speed = calculateSpeed();
+		
+		List<PolygonRS> rsList = getRSList();
+		for(int i = 1; i < rsList.size(); i++)
+		{
+			rsList.get(i).cyclePeriod = rsList.get(i).calculateCyclePeriod();
+			rsList.get(i).speed = rsList.get(i).calculateSpeed();
+		}
+	}
 }
