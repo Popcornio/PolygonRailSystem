@@ -265,15 +265,26 @@ class PolygonWindow extends JPanel
 		int stringWidth	 = 0;
 		int stringHeight = 0;
 		
-		String intro =    "Polygon Rail System\n"
-						+ "Team #8\n"
+		String intro =    "        Polygon Rail System      \n"
+						+ "             Team #8             \n"
 						+ "Daniel Pacheco, Jessica Jennings,\n"
-						+ "Zackary Hoyt, Tiffany Engen\n\n"
-						+ "Controls:\n"
+						+ "   Zackary Hoyt, Tiffany Engen   \n\n"
+						+ "Polygon Shape Controls:\n"
 						+ "Left Click: Grow Polygon (+side)\n"
 						+ "Middle Click: Add Polygon\n"
 						+ "Right Click: Shrink Polygon (-side)\n\n"
-						+ "Click anywhere to continue...";
+						+ "Speed Controls:\n"
+						+ "p: Pause\n"
+						+ "[: Increase Speed\n"
+						+ "]: Decrease Speed\n"
+						+ "{: Increase Children's Speed\n"
+						+ "}: Decrease Children's Speed\n"
+						+ "R: Resets Rate of Change\n\n"
+						+ "Other Controls:\n"
+						+ "1, 2, 3, 4: Presets\n"
+						+ "0: Reset Program\n"
+						+ "o: Outline Display\n\n"
+						+ "Add a polygon to continue...";
 		
 		g.setFont(new Font("Verdana", Font.PLAIN, 14));
 		FontMetrics metrics = g.getFontMetrics();
