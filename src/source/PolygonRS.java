@@ -29,6 +29,8 @@ public class PolygonRS extends Polygon
 	static final int INITIAL_DEPTH = 0;	//	this should never be modified; this is just here to describe the value
 	static final int DEFAULT_INITIAL_RADIUS = 170;	//	radius of the circle-base used to draw a polygon with equal sides
 	static final int DEFAULT_INITIAL_CYCLE_PERIOD = 16;
+	static final double DEFAULT_CYCLE_PERIOD_POWER = 1;
+	static final double DEFAULT_BASE_RADIUS_POWER = 0.925d;
 	
 	//	Private Attributes
 	private PolygonRS parent = null;
@@ -40,6 +42,9 @@ public class PolygonRS extends Polygon
 	private int baseRadius;	//	pixels
 	private double speed;		//	pixels/sec
 	private double cyclePeriod;	//	How long it should take for a train should take to cycle its track (seconds).
+	
+	static private double cyclePeriodPower = DEFAULT_CYCLE_PERIOD_POWER;
+	static private double baseRadiusPower = DEFAULT_BASE_RADIUS_POWER;
 	
 	private Point center = new Point();	//	modified in every update 
 		
@@ -224,11 +229,11 @@ public class PolygonRS extends Polygon
 	}
 	public int calculateCyclePeriod()
 	{
-		return (int)(Math.pow(parent.cyclePeriod, 1) + 0.5d);	//	the function to calculate a child cycle period is modifiable
+		return (int)(Math.pow(parent.cyclePeriod, cyclePeriodPower) + 0.5d);	//	the function to calculate a child cycle period is modifiable
 	}
 	public int calculateBaseRadius()
 	{
-		return (int)(Math.pow(parent.baseRadius, 0.925d) + 0.5d);	//	the function to calculate a child base radius is modifiable
+		return (int)(Math.pow(parent.baseRadius, baseRadiusPower) + 0.5d);	//	the function to calculate a child base radius is modifiable
 	}
 	
 	public void initializeUpdate(Dimension screenSize, double deltaTime)
@@ -348,9 +353,9 @@ public class PolygonRS extends Polygon
 			rsList.get(i).speed = rsList.get(i).calculateSpeed();
 		}
 	}
-	public void adjustSpeed(int adjustment)
+	public void adjustCyclePeriod(double adjustment)
 	{
-		if (cyclePeriod + adjustment < 1)
+		if (cyclePeriod + adjustment < 1 || cyclePeriod + adjustment > 60)
 			return;
 		
 		cyclePeriod += adjustment;
@@ -363,4 +368,33 @@ public class PolygonRS extends Polygon
 			rsList.get(i).speed = rsList.get(i).calculateSpeed();
 		}
 	}
+
+	public void resetCyclePeriodPower()
+	{
+		cyclePeriodPower = DEFAULT_CYCLE_PERIOD_POWER; 
+		speed = calculateSpeed();
+		
+		List<PolygonRS> rsList = getRSList();
+		for(int i = 1; i < rsList.size(); i++)
+		{
+			rsList.get(i).cyclePeriod = rsList.get(i).calculateCyclePeriod();
+			rsList.get(i).speed = rsList.get(i).calculateSpeed();
+		}
+	}
+	public void adjustCyclePeriodPower(double adjustment)
+	{
+		if (cyclePeriodPower + adjustment < 0.750d || cyclePeriodPower + adjustment > 1.250d)
+			return;
+		
+		cyclePeriodPower += adjustment;
+		speed = calculateSpeed();
+		
+		List<PolygonRS> rsList = getRSList();
+		for(int i = 1; i < rsList.size(); i++)
+		{
+			rsList.get(i).cyclePeriod = rsList.get(i).calculateCyclePeriod();
+			rsList.get(i).speed = rsList.get(i).calculateSpeed();
+		}
+	}
+
 }

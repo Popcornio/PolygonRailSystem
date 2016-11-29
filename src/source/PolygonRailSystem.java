@@ -45,18 +45,32 @@ public class PolygonRailSystem
             	case 'p':
             		prs.logicRunning = !prs.logicRunning;
             		break;
+            		
             	case '[':
             		if (prs.root != null)
-            			prs.root.adjustSpeed(-1);
+            			prs.root.adjustCyclePeriod(-1);
             		break;
             	case ']':
             		if (prs.root != null)
-            			prs.root.adjustSpeed(1);
+            			prs.root.adjustCyclePeriod(1);
             		break;
             	case 'r':
             		if (prs.root != null)
             			prs.root.resetCyclePeriod();
             		break;
+            		
+            	case '{':
+            		if (prs.root != null)
+            			prs.root.adjustCyclePeriodPower(-0.0125d);
+            	break;
+            	case '}':
+            		if (prs.root != null)
+            			prs.root.adjustCyclePeriodPower(0.0125d);
+            	break;
+            	case 'R':
+            		if (prs.root != null)
+            			prs.root.resetCyclePeriodPower();
+            	break;
             		
             		
             	case '0':
