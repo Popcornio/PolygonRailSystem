@@ -48,7 +48,7 @@ public class PolygonRS extends Polygon
 	
 	private Point center = new Point();	//	modified in every update 
 		
-	//	Constructor
+	//	Constructors
 	
 	PolygonRS()
 	{
@@ -395,6 +395,10 @@ public class PolygonRS extends Polygon
 			rsList.get(i).cyclePeriod = rsList.get(i).calculateCyclePeriod();
 			rsList.get(i).speed = rsList.get(i).calculateSpeed();
 		}
+	}
+	static public void resetSettings()
+	{
+		cyclePeriodPower = DEFAULT_CYCLE_PERIOD_POWER; 
 	}
 
 }

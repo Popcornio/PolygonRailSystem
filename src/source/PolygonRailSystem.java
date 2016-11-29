@@ -75,6 +75,7 @@ public class PolygonRailSystem
             		
             	case '0':
             		prs.root = null;
+            		PolygonRS.resetSettings();
             		break;
             	case '1':
             		prs.preset1();
@@ -173,6 +174,7 @@ class PolygonWindow extends JPanel
 	void preset4()
 	{
 		root = new PolygonRS();
+		root.initializeUpdate(getSize(), 0);
 		Queue<PolygonRS> q = new ArrayDeque<PolygonRS>();
 		q.add(root);
 		
@@ -191,6 +193,7 @@ class PolygonWindow extends JPanel
 	void preset3()
 	{
 		root = new PolygonRS();
+		root.initializeUpdate(getSize(), 0);
 		Queue<PolygonRS> q = new ArrayDeque<PolygonRS>();
 		q.add(root);
 		
@@ -209,6 +212,7 @@ class PolygonWindow extends JPanel
 	void preset2()
 	{
 		root = new PolygonRS();
+		root.initializeUpdate(getSize(), 0);
 		Queue<PolygonRS> q = new ArrayDeque<PolygonRS>();
 		q.add(root);
 		
@@ -227,6 +231,7 @@ class PolygonWindow extends JPanel
 	void preset1()
 	{
 		root = new PolygonRS();
+		root.initializeUpdate(getSize(), 0);
 		Queue<PolygonRS> q = new ArrayDeque<PolygonRS>();
 		q.add(root);
 		
