@@ -304,10 +304,10 @@ class PolygonWindow extends JPanel
 
 			for (int i = 0; i < polygonRSList.size(); i++)
 			{
-				g2.setPaint(Color.BLACK);
-				g.drawPolygon(polygonRSList.get(i).getPolygon());
 				g2.setPaint(colors[(colorIndex++) % 7]);	//%3 if adding more colors increase
 				g2.fill(polygonRSList.get(i).getPolygon());	//fill
+				g2.setPaint(Color.BLACK);
+				g.drawPolygon(polygonRSList.get(i).getPolygon());
 
 				if (showBase)
 				{
