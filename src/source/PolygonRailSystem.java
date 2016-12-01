@@ -277,6 +277,7 @@ class PolygonWindow extends JPanel
 						+ "p: Pause\n"
 						+ "[: Increase Speed\n"
 						+ "]: Decrease Speed\n"
+						+ "r: Reset Speed\n"
 						+ "{: Increase Children's Speed\n"
 						+ "}: Decrease Children's Speed\n"
 						+ "R: Resets Rate of Change\n\n"
